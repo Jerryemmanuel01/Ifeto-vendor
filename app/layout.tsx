@@ -1,6 +1,18 @@
 import type { Metadata } from "next";
 import StoreProvider from "@/lib/providers/StoreProvider";
-import "./globals.css";
+import { Inter, Nunito_Sans } from "next/font/google";
+import { Suspense } from "react";
+import "@/styles/globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+const nunito = Nunito_Sans({
+  subsets: ["latin"],
+  variable: "--font-nunito",
+});
 
 export const metadata: Metadata = {
   title: "IFETO E-Commerce Vendor",
@@ -14,8 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={` antialiased`}>
-        <StoreProvider>{children}</StoreProvider>
+      <body className={` antialiased ${inter.className} ${nunito.className}`}>
+        <StoreProvider>
+          <Suspense fallback={null}>{children}</Suspense>
+        </StoreProvider>
       </body>
     </html>
   );

@@ -10,15 +10,15 @@ import {
 } from "@/components/ui/select";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import MerticsCard from "../_components/dashboard/MerticsCard";
+import MerticsCard from "../../components/dashboard/MerticsCard";
 import purpleCube from "@/assets/svgs/purple-cube.svg";
 import orangeCube from "@/assets/svgs/orange-cube.svg";
 import greenTruck from "@/assets/svgs/green-truck.svg";
 import walletAdd from "@/assets/svgs/wallet-add.svg";
 import emptyIcon from "@/assets/svgs/empty-state.svg";
 import Image from "next/image";
-import EmptyState from "../_components/EmptyState";
-import OrdersTable from "../_components/dashboard/OrdersTable";
+import EmptyState from "../../components/EmptyState";
+import OrdersTable from "../../components/dashboard/OrdersTable";
 
 export default function Page() {
   const router = useRouter();

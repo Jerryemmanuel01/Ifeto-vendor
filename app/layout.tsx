@@ -4,6 +4,11 @@ import { Inter, Nunito_Sans } from "next/font/google";
 import { Suspense } from "react";
 import "@/styles/globals.css";
 
+export const metadata: Metadata = {
+  title: "IFETO E-Commerce Vendor",
+  description: "Your shopping from abroad made easier",
+};
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -14,16 +19,11 @@ const nunito = Nunito_Sans({
   variable: "--font-nunito",
 });
 
-export const metadata: Metadata = {
-  title: "IFETO E-Commerce Vendor",
-  description: "Your shopping from abroad made easier",
-};
-
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body className={` antialiased ${inter.className} ${nunito.className}`}>

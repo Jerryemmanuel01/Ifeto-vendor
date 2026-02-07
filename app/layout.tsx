@@ -3,6 +3,7 @@ import StoreProvider from "@/lib/providers/StoreProvider";
 import { Inter, Nunito_Sans } from "next/font/google";
 import { Suspense } from "react";
 import "@/styles/globals.css";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "IFETO E-Commerce Vendor",
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body className={` antialiased ${inter.className} ${nunito.className}`}>
         <StoreProvider>
           <Suspense fallback={null}>{children}</Suspense>
+          <Toaster richColors position="top-right" />
         </StoreProvider>
       </body>
     </html>

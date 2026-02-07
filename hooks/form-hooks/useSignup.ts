@@ -4,9 +4,16 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useSignupMutation } from "@/lib/features/auth/authApi";
 import { showErrorToast, showSuccessToast } from "@/utils/toastHelpers";
+import { useGetCountriesQuery } from "@/lib/features/common/commonApi";
 
 const useSignup = () => {
-  const [secondForm, setSecondForm] = useState(false);
+    const { data: countriesData } = useGetCountriesQuery();
+    const countries = Array.isArray(countriesData)
+      ? countriesData
+      : (countriesData as any)?.data || [];
+
+    const [showPassword, setshowPassword] = useState(false);
+    const [showConfirmPassword, setshowConfirmPassword] = useState(false);
   const router = useRouter();
 
   const [signup, { isLoading }] = useSignupMutation();
@@ -51,7 +58,7 @@ const useSignup = () => {
       }
     },
   });
-  return { formik, secondForm, setSecondForm, isLoading };
+  return { formik, isLoading, countries, showPassword, setshowPassword, showConfirmPassword, setshowConfirmPassword };
 };
 
 export default useSignup;

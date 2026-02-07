@@ -47,3 +47,16 @@ export const LoginSchema = Yup.object({
   email: Yup.string().email("Invalid email").required("Email is required"),
   password: Yup.string().required("Password is required"),
 });
+
+export const ForgotPasswordSchema = Yup.object({
+  email: Yup.string().email("Invalid email").required("Email is required"),
+});
+
+export const ResetPasswordSchema = Yup.object({
+  password: Yup.string()
+    .matches(passwordRegex, passwordMessage)
+    .required("Password is required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password")], "Passwords must match")
+    .required("Confirm Password is required"),
+});

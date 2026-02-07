@@ -12,7 +12,6 @@ import SignupForm from "@/components/auth/SignupForm";
 
 
 const page = () => {
-  const { formik, secondForm, setSecondForm } = useSignup();
   const [backgroundIndex, setBackgroundIndex] = useState(0);
   const backgroundImages = [authImage, authImage2];
   const isLoading = false;
@@ -30,7 +29,7 @@ const page = () => {
 
         {/* forms */}
         
-          <SignupForm formik={formik} setsecondForm={setSecondForm} />
+          <SignupForm />
       </div>
 
       {/* right side desktop*/}

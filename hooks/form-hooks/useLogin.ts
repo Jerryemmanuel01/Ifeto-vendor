@@ -46,13 +46,7 @@ const useLogin = () => {
     },
   });
 
-  const canSubmit =
-    formik.values.email &&
-    !formik.errors.email &&
-    formik.values.password &&
-    !formik.errors.password;
-
-  return { formik, showPassword, setShowPassword, canSubmit, isLoading };
+  return { formik, showPassword, setShowPassword, isLoading };
 };
 
 export default useLogin;

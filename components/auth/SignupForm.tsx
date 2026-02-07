@@ -8,28 +8,18 @@ import { useState } from "react";
 
 import { useGetCountriesQuery } from "@/lib/features/common/commonApi";
 import CustomSelect from "@/components/general/CustomSelect";
+import useSignup from "@/hooks/form-hooks/useSignup";
 
-const SignupForm = ({ formik, setsecondForm }: any) => {
-  const { data: countriesData } = useGetCountriesQuery();
-  const countries = Array.isArray(countriesData)
-    ? countriesData
-    : (countriesData as any)?.data || [];
-
-  const canContinue =
-    formik.values.firstName &&
-    !formik.errors.firstName &&
-    formik.values.lastName &&
-    !formik.errors.lastName &&
-    formik.values.email &&
-    !formik.errors.email &&
-    !formik.errors.email &&
-    formik.values.phone &&
-    !formik.errors.phone &&
-    formik.values.country &&
-    !formik.errors.country;
-
-  const [showPassword, setshowPassword] = useState(false);
-  const [showConfirmPassword, setshowConfirmPassword] = useState(false);
+const SignupForm = () => {
+  const {
+    formik,
+    isLoading,
+    countries,
+    showPassword,
+    setshowPassword,
+    showConfirmPassword,
+    setshowConfirmPassword,
+  } = useSignup();
 
   return (
     <div className="mt-7 lg:mt-0 lg:px-8  lg:py-6 px-6 bg-white lg:shadow-custom rounded-2xl">
@@ -42,7 +32,7 @@ const SignupForm = ({ formik, setsecondForm }: any) => {
         </p>
       </div>
       <div className="mt-8">
-        <form className="" onSubmit={() => setsecondForm(true)}>
+        <form className="" onSubmit={formik.handleSubmit}>
           <div className="">
             <label className="block font-medium text-sm" htmlFor="firstName">
               First Name
@@ -242,10 +232,10 @@ const SignupForm = ({ formik, setsecondForm }: any) => {
           <div className="mt-8">
             <div className="">
               <button
-                disabled={!canContinue}
+                disabled={isLoading}
                 type="submit"
                 className={` w-full h-12 rounded-md text-center px-5 text-lg  font-semibold cursor-pointer ${
-                  !canContinue
+                  !formik.isValid || !formik.dirty
                     ? "bg-[#C7D3CC] text-white"
                     : "bg-primary text-white"
                 }`}

@@ -1,9 +1,10 @@
 "use client";
 
-import LoginForm from "@/components/auth/LoginForm";
+import ForgotPasswordForm from "@/components/auth/ForgotPasswordForm";
 import Image from "next/image";
-import authBg from "@/assets/images/authImg.png";
 import securityUser from "@/assets/icons/security-user.svg";
+import authBg from "@/assets/images/authImg.png";
+
 const Page = () => {
   return (
     <div className="w-full min-h-screen relative flex flex-col items-center justify-center bg-gray-50 lg:bg-transparent overflow-hidden">
@@ -11,7 +12,7 @@ const Page = () => {
       <div className="hidden lg:block absolute inset-0 z-0 h-full w-full">
         <Image
           src={authBg}
-          alt="Login Background"
+          alt="Forgot Password Background"
           fill
           className="object-cover"
           sizes="100vw"
@@ -38,7 +39,7 @@ const Page = () => {
 
         {/* Form Container */}
         <div className="w-full max-w-lg">
-          <LoginForm />
+          <ForgotPasswordForm />
         </div>
       </div>
     </div>

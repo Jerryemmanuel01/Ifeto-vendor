@@ -11,7 +11,7 @@ export default function useRedirectIfAuthenticated() {
   useEffect(() => {
     const token =
       typeof window !== "undefined"
-        ? localStorage.getItem("accessToken")
+        ? localStorage.getItem("ifetoVendorToken")
         : null;
 
     console.log("Token:", token);

@@ -60,3 +60,14 @@ export const ResetPasswordSchema = Yup.object({
     .oneOf([Yup.ref("password")], "Passwords must match")
     .required("Confirm Password is required"),
 });
+
+export const BusinessInfoSchema = Yup.object({
+  businessName: Yup.string().required("Business Name is required"),
+  businessType: Yup.string().required("Business Type is required"),
+  registrationNumber: Yup.string().required("Registration Number is required"),
+  taxId: Yup.string().required("Tax ID is required"),
+  email: Yup.string().email("Invalid email").required("Email is required"),
+  contactPerson: Yup.string().required("Contact Person is required"),
+  address: Yup.string().required("Address is required"),
+  phone: Yup.string().required("Phone Number is required"),
+});

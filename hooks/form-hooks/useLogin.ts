@@ -32,9 +32,12 @@ const useLogin = () => {
         dispatch(
           setCredentials({
             user: userData.data.user,
-            token: userData.data.token,
+            token: userData.data.accessToken,
           }),
         );
+        if (typeof window !== "undefined") {
+          localStorage.setItem("ifetoVendorToken", userData.data.accessToken);
+        }
         showSuccessToast("Login successful!");
         router.push("/dashboard");
       } catch (err: any) {

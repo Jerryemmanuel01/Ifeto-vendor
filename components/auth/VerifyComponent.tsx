@@ -9,7 +9,7 @@ import AuthSliderMobile from "@/components/auth/AuthSliderMobile";
 import AuthSliderDesktop from "@/components/auth/AuthSliderDesktop";
 import VerifyCodeForm from "@/components/auth/VerifyCodeForm";
 import useVerify from "@/hooks/form-hooks/useVerify";
-import verifyImg from "@/assets/images/verify.png";
+import verifyImg from "@/assets/icons/successCheck.svg";
 import { useRouter, useSearchParams } from "next/navigation";
 import useRedirectIfAuthenticated from "@/hooks/useRedirectIfAuthenticated";
 import Spinner from "@/components/loaders/Spinner";
@@ -54,11 +54,21 @@ const VerifyComponent = () => {
       <div className="w-full lg:w-1/2 lg:px-[45px] lg:py-20 mt-3 mb-10">
         {isVerified ? (
           <div className="lg:py-10 mt-7 lg:px-8 px-6 bg-white lg:shadow-custom rounded-2xl max-w-2xl mx-auto flex flex-col items-center justify-center">
-            <Image
-              src={verifyImg}
-              alt="success image"
-              className="w-[300px] animate-pulse"
-            />
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{
+                type: "spring",
+                stiffness: 260,
+                damping: 20,
+              }}
+            >
+              <Image
+                src={verifyImg}
+                alt="success image"
+                className="w-[300px] animate-pulse"
+              />
+            </motion.div>
             <p className="mt-8 text-2xl font-medium text-center">
               Your account has been verified successfully.
             </p>

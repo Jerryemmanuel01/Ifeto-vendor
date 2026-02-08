@@ -12,10 +12,10 @@ const useResetPassword = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const token = searchParams.get("token");
-  const userId = searchParams.get("userId"); // Or email, depending on backend
+  const code = searchParams.get("code");
+  const email = searchParams.get("email"); // Or email, depending on backend
 
-  const [isSuccess, setIsSuccess] = useState(true);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -26,16 +26,17 @@ const useResetPassword = () => {
     },
     validationSchema: ResetPasswordSchema,
     onSubmit: async (values) => {
-      if (!token) {
+      if (!code) {
         showErrorToast("Invalid or missing reset token.");
         return;
       }
 
       try {
         const result = await resetPassword({
-          token,
-          userId,
+          code,
+          email,
           password: values.password,
+          confirmPassword: values.confirmPassword,
         }).unwrap();
 
         showSuccessToast(result.message || "Password reset successful!");

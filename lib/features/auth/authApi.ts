@@ -11,7 +11,7 @@ export const authApi = apiSlice.injectEndpoints({
     }),
     verifyAuthCode: builder.mutation<any, { code: string; userId: string }>({
       query: (data) => ({
-        url: "/auth/vendor/verify-email",
+        url: "/auth/vendor/verify-auth-code",
         method: "POST",
         body: data,
       }),
@@ -44,6 +44,18 @@ export const authApi = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    logoutUser: builder.mutation<any, void>({
+      query: () => ({
+        url: "/auth/vendor/logout",
+        method: "POST",
+      }),
+    }),
+    renewTokens: builder.mutation<any, void>({
+      query: () => ({
+        url: "/auth/vendor/renew-tokens",
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -54,4 +66,6 @@ export const {
   useLoginMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
+  useLogoutUserMutation,
+  useRenewTokensMutation,
 } = authApi;

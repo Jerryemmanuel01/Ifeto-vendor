@@ -9,7 +9,7 @@ import { useState } from "react";
 const useForgotPassword = () => {
   const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
-  const [isSuccess, setIsSuccess] = useState(true);
+  const [isSuccess, setIsSuccess] = useState(false);
   
   const formik = useFormik({
     initialValues: {

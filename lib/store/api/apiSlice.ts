@@ -9,6 +9,7 @@ import { logout, tokenReceived } from "@/lib/features/auth/authSlice";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
+  credentials: "include",
   prepareHeaders: (headers) => {
     const token = localStorage.getItem("ifetoVendorToken");
     if (token) {
@@ -77,6 +78,6 @@ const baseQueryWithReauth: BaseQueryFn<
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: [],
+  tagTypes: ["Profile"],
   endpoints: (builder) => ({}),
 });

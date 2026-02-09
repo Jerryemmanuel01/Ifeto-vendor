@@ -71,3 +71,11 @@ export const BusinessInfoSchema = Yup.object({
   address: Yup.string().required("Address is required"),
   phone: Yup.string().required("Phone Number is required"),
 });
+
+export const AccountDetailsSchema = Yup.object({
+  accountName: Yup.string().required("Account Name is required"),
+  bank: Yup.string().required("Bank is required"),
+  accountNumber: Yup.string()
+    .required("Account Number is required")
+    .min(5, "Account Number must be at least 5 characters"),
+});

@@ -56,6 +56,27 @@ export const authApi = apiSlice.injectEndpoints({
         method: "POST",
       }),
     }),
+    updateBusinessInfo: builder.mutation<any, any>({
+      query: (data) => ({
+        url: "/auth/vendor/onboarding/business-info",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    updateBusinessDocuments: builder.mutation<any, any>({
+      query: (data) => ({
+        url: "/auth/vendor/onboarding/documents",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    updateAccountDetails: builder.mutation<any, any>({
+      query: (data) => ({
+        url: "/auth/vendor/onboarding/account-details",
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -68,4 +89,7 @@ export const {
   useResetPasswordMutation,
   useLogoutUserMutation,
   useRenewTokensMutation,
+  useUpdateBusinessInfoMutation,
+  useUpdateBusinessDocumentsMutation,
+  useUpdateAccountDetailsMutation,
 } = authApi;

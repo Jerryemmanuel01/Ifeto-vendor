@@ -107,7 +107,7 @@ const SignupForm = () => {
 
             <PhoneInput
               placeholder="1234567890"
-              country={"us"}
+              country={"ng"}
               value={formik.values.phone}
               onChange={(value) => formik.setFieldValue("phone", value)}
               onBlur={() => formik.setFieldTouched("phone", true)}
@@ -235,12 +235,12 @@ const SignupForm = () => {
                 disabled={isLoading}
                 type="submit"
                 className={` w-full h-12 rounded-md text-center px-5 text-lg  font-semibold cursor-pointer ${
-                  !formik.isValid || !formik.dirty
+                  !formik.isValid || !formik.dirty || isLoading
                     ? "bg-[#C7D3CC] text-white"
                     : "bg-primary text-white"
                 }`}
               >
-                Proceed
+                {isLoading ? "Loading..." : "Proceed"}
               </button>
             </div>
             <div className="flex items-center gap-2 w-full justify-center mt-2.5">

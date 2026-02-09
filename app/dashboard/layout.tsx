@@ -5,16 +5,24 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import { Search } from "lucide-react";
 import { useState } from "react";
 
+import { useGetProfileQuery } from "@/lib/features/profile/profileApi";
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { data: userProfile, isLoading } = useGetProfileQuery();
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        isLoading={isLoading}
+        userProfile={userProfile?.data}
+      />
       <Header onMenuClick={() => setIsSidebarOpen(true)} />
 
       <main className="p-4 lg:ml-64 pt-20 lg:pt-24 min-h-screen">

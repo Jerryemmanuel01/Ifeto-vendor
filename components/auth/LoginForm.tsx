@@ -117,6 +117,18 @@ const LoginForm = () => {
               Login
             </button>
           </div>
+
+          <div className="flex items-center gap-2 w-full justify-center mt-2.5">
+            <span className="font-semibold text-lg">
+              Don't have an account?
+            </span>
+            <Link
+              href="/auth/signup"
+              className="text-primary text-lg font-semibold"
+            >
+              Sign Up
+            </Link>
+          </div>
         </form>
       </div>
     </div>

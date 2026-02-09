@@ -3,12 +3,20 @@
 import { Bell, Search, Menu } from "lucide-react";
 import Image from "next/image";
 import Logo from "@/assets/images/IFETO-Logo-1.png";
+import { useSelector } from "react-redux";
+import { selectUserProfile } from "@/lib/features/profile/profileSlice";
 
 interface HeaderProps {
   onMenuClick: () => void;
 }
 
 const Header = ({ onMenuClick }: HeaderProps) => {
+  const user = useSelector(selectUserProfile);
+  const initials =
+    user?.firstName && user?.lastName
+      ? `${user.firstName[0]}${user.lastName[0]}`
+      : "HE"; // Fallback initials
+
   return (
     <header className="fixed top-0 z-30 w-full lg:w-[calc(100%-16rem)] right-0 bg-white/80 backdrop-blur-md border-b border-gray-200">
       <div className="px-4 py-3 lg:px-6 lg:py-4 flex items-center justify-between">
@@ -56,7 +64,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
           </button>
 
           <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold text-sm">
-            HE
+            {initials}
           </div>
 
           {/* Mobile Menu Button */}

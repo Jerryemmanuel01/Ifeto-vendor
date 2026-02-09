@@ -162,7 +162,9 @@ const VerifyCodeForm = ({
               type="submit"
               disabled={!canSubmit || isLoading}
               className={`w-full h-12 rounded-md text-center text-lg font-semibold cursor-pointer ${
-                !canSubmit ? "bg-[#C7D3CC] text-white" : "bg-primary text-white"
+                !canSubmit || isLoading
+                  ? "bg-[#C7D3CC] text-white"
+                  : "bg-primary text-white"
               }`}
             >
               {isLoading ? "Verifying..." : "Verify"}

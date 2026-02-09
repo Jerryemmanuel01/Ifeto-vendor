@@ -1,39 +1,24 @@
 "use client";
 
-import { useFormik } from "formik";
-import { BusinessInfoSchema } from "@/utils/schema";
-import { ChevronDown, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import Image from "next/image";
-import ngFlag from "@/assets/icons/nigeria.svg"; // Assuming you have this or similar, otherwise fallback
+import PhoneInput from "react-phone-input-2";
+import CustomSelect from "@/components/general/CustomSelect";
+import "react-phone-input-2/lib/style.css";
+import useBusinessInfo from "@/hooks/form-hooks/useBusinessInfo";
 
 const BusinessInfoForm = () => {
-  // Mocking the flag import if not available, or replacing with a div
-
-  const formik = useFormik({
-    initialValues: {
-      businessName: "",
-      businessType: "",
-      registrationNumber: "",
-      taxId: "",
-      email: "",
-      contactPerson: "",
-      address: "",
-      phone: "",
-    },
-    validationSchema: BusinessInfoSchema,
-    onSubmit: (values) => {
-      console.log(values);
-      // Handle submission
-    },
-  });
+  const { formik, isLoading } = useBusinessInfo();
 
   return (
     <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
       <div className="mb-8">
-        <h2 className="text-xl font-bold text-gray-900">
+        <h2 className="lg:text-3xl text-2xl font-bold text-gray-900">
           Business Information
         </h2>
-        <p className="text-gray-500 mt-1">Provide your business information</p>
+        <p className="text-gray-500 mt-1 lg:text-xl">
+          Provide your business information
+        </p>
       </div>
 
       <form onSubmit={formik.handleSubmit}>
@@ -62,34 +47,28 @@ const BusinessInfoForm = () => {
 
           {/* Business Type */}
           <div>
-            <label
-              htmlFor="businessType"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Business Type <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <select
-                id="businessType"
-                {...formik.getFieldProps("businessType")}
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-gray-400 text-sm appearance-none bg-white"
-              >
-                <option value="" disabled>
-                  Select your business type
-                </option>
-                <option value="sole_proprietorship">Sole Proprietorship</option>
-                <option value="limited_liability">
-                  Limited Liability Company
-                </option>
-                <option value="partnership">Partnership</option>
-              </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-            </div>
-            {formik.touched.businessType && formik.errors.businessType && (
-              <div className="text-red-500 text-xs mt-1">
-                {formik.errors.businessType}
-              </div>
-            )}
+            <CustomSelect
+              label={
+                <>
+                  Business Type <span className="text-red-500">*</span>
+                </>
+              }
+              className="h-12"
+              name="businessType"
+              value={formik.values.businessType}
+              onChange={(name, value) => formik.setFieldValue(name, value)}
+              options={[
+                { label: "Sole Proprietorship", value: "sole_proprietorship" },
+                {
+                  label: "Limited Liability Company",
+                  value: "limited_liability",
+                },
+                { label: "Partnership", value: "partnership" },
+              ]}
+              placeholder="Select your business type"
+              error={formik.errors.businessType}
+              touched={formik.touched.businessType}
+            />
           </div>
 
           {/* Registration Number */}
@@ -214,20 +193,29 @@ const BusinessInfoForm = () => {
             >
               Phone Number
             </label>
-            <div className="flex">
-              <div className="flex items-center justify-center px-4 py-3 border border-r-0 border-gray-200 rounded-l-lg bg-gray-50/50">
-                {/* Placeholder for flag */}
-                <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center text-white text-[8px] mr-2">
-                  NG
-                </div>
-                <ChevronDown className="w-3 h-3 text-gray-500" />
-              </div>
-              <input
-                type="text"
-                id="phone"
-                {...formik.getFieldProps("phone")}
-                placeholder="+234"
-                className="w-full px-4 py-3 rounded-r-lg border border-gray-200 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-gray-400 text-sm"
+            <div className="w-full">
+              <PhoneInput
+                country={"ng"}
+                value={formik.values.phone}
+                onChange={(phone) => formik.setFieldValue("phone", phone)}
+                // containerClass="w-full border border-gray-200 rounded-lg focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-colors"
+                // inputClass="!w-full !px-4 !py-3 !h-[46px] !border-none !outline-none !text-sm !text-gray-900 !rounded-lg !bg-transparent"
+                buttonClass="!border-none !bg-transparent !rounded-l-lg hover:!bg-gray-50"
+                // dropdownClass="!bg-white !shadow-lg !rounded-lg !border-gray-100"
+                inputStyle={{
+                  width: "100%",
+                  outline: "none",
+                  height: "46px",
+                  fontSize: "14px",
+                }}
+                buttonStyle={{
+                  background: "transparent",
+                }}
+                inputProps={{
+                  name: "phone",
+                  required: true,
+                  autoFocus: false,
+                }}
               />
             </div>
             {formik.touched.phone && formik.errors.phone && (
@@ -241,9 +229,14 @@ const BusinessInfoForm = () => {
         <div className="mt-8">
           <button
             type="submit"
-            className="w-full py-4 bg-[#C2C2C2] text-white font-semibold rounded-lg text-sm hover:bg-[#A0A0A0] transition-colors cursor-pointer"
+            disabled={!formik.isValid || !formik.dirty || isLoading}
+            className={`w-full py-4 font-semibold rounded-lg text-lg transition-colors ${
+              !formik.isValid || !formik.dirty || isLoading
+                ? "bg-[#C7D3CC] text-white"
+                : "bg-primary text-white"
+            }`}
           >
-            Proceed
+            {isLoading ? "Processing..." : "Proceed"}
           </button>
         </div>
       </form>

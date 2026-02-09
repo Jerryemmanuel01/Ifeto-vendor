@@ -2,28 +2,43 @@
 
 import { Check, ClipboardList, ShoppingBag, User } from "lucide-react";
 
+import { selectUserProfile } from "@/lib/features/profile/profileSlice";
+import { useSelector } from "react-redux";
+import CircularProgress from "@/components/general/CircularProgress";
+
 const OnboardingSteps = () => {
+  const user = useSelector(selectUserProfile);
+  const percentage = user?.onboarding?.percentage || 0;
+
   const steps = [
     {
       id: 1,
       title: "Business Information",
-      status: "PENDING",
+      status: user?.onboarding?.isBusinessInfoComplete
+        ? "COMPLETED"
+        : "PENDING",
       icon: ShoppingBag,
-      active: true,
+      active: !user?.onboarding?.isBusinessInfoComplete,
     },
     {
       id: 2,
       title: "Business Documentation",
-      status: "PENDING",
+      status: user?.onboarding?.isDocumentsComplete ? "COMPLETED" : "PENDING",
       icon: ClipboardList,
-      active: false,
+      active:
+        user?.onboarding?.isBusinessInfoComplete &&
+        !user?.onboarding?.isDocumentsComplete,
     },
     {
       id: 3,
       title: "Account Details",
-      status: "PENDING",
+      status: user?.onboarding?.isAccountDetailsComplete
+        ? "COMPLETED"
+        : "PENDING",
       icon: User,
-      active: false,
+      active:
+        user?.onboarding?.isDocumentsComplete &&
+        !user?.onboarding?.isAccountDetailsComplete,
     },
   ];
 
@@ -31,34 +46,7 @@ const OnboardingSteps = () => {
     <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 mb-8">
       {/* Header */}
       <div className="flex items-start gap-4 mb-8">
-        <div className="relative w-12 h-12 flex-shrink-0">
-          {/* Progress Circle Mockup */}
-          <svg className="w-full h-full transform -rotate-90">
-            <circle
-              cx="24"
-              cy="24"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="4"
-              fill="transparent"
-              className="text-gray-200"
-            />
-            <circle
-              cx="24"
-              cy="24"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="4"
-              fill="transparent"
-              strokeDasharray={125.6} // 2 * pi * 20
-              strokeDashoffset={125.6 * (1 - 0.3)} // 30% progress
-              className="text-primary"
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold">
-            30%
-          </div>
-        </div>
+        <CircularProgress percentage={percentage} size={48} />
         <div>
           <h2 className="text-lg font-semibold text-gray-900">
             Complete your account setup
@@ -76,7 +64,13 @@ const OnboardingSteps = () => {
           return (
             <div
               key={step.id}
-              className={`p-4 rounded-lg flex items-start justify-between border ${step.active ? "bg-gray-50 border-gray-200" : "bg-gray-50/50 border-transparent"}`}
+              className={`p-4 rounded-lg flex items-start justify-between border ${
+                step.status === "COMPLETED"
+                  ? "bg-[#E3FFEF] border-transparent"
+                  : step.active
+                    ? "bg-gray-50 border-gray-200"
+                    : "bg-gray-50/50 border-transparent"
+              }`}
             >
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">
@@ -87,10 +81,16 @@ const OnboardingSteps = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-gray-300 flex items-center justify-center">
-                    {/* Pending Icon placeholder */}
+                  <div
+                    className={`w-4 h-4 rounded-full flex items-center justify-center ${step.status === "COMPLETED" ? "bg-primary text-white" : "bg-gray-300"}`}
+                  >
+                    {step.status === "COMPLETED" && (
+                      <Check className="w-3 h-3" />
+                    )}
                   </div>
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <span
+                    className={`text-xs font-medium uppercase tracking-wide ${step.status === "COMPLETED" ? "text-primary" : "text-gray-500"}`}
+                  >
                     {step.status}
                   </span>
                 </div>

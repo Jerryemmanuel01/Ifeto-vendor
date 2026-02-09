@@ -2,7 +2,7 @@
 
 import { ChevronDown, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import clsx from "clsx";
+import { cn } from "@/utils/utils";
 
 interface Option {
   label: string;
@@ -10,7 +10,7 @@ interface Option {
 }
 
 interface CustomSelectProps {
-  label: string;
+  label: React.ReactNode;
   name: string;
   value: string | number;
   onChange: (name: string, value: string | number) => void;
@@ -19,6 +19,11 @@ interface CustomSelectProps {
   error?: string;
   touched?: boolean;
   disabled?: boolean;
+  className?: string; // For the trigger element
+  containerClassName?: string; // For the outer wrapper
+  labelClassName?: string; // For the label
+  optionClassName?: string; // For dropdown options
+  contentClassName?: string; // For dropdown content wrapper
 }
 
 const CustomSelect = ({
@@ -31,6 +36,11 @@ const CustomSelect = ({
   error,
   touched,
   disabled = false,
+  className,
+  containerClassName,
+  labelClassName,
+  optionClassName,
+  contentClassName,
 }: CustomSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -71,30 +81,37 @@ const CustomSelect = ({
   };
 
   return (
-    <div className="w-full relative" ref={dropdownRef}>
-      <label className="block font-medium text-sm mb-1" htmlFor={name}>
+    <div
+      className={cn("w-full relative", containerClassName)}
+      ref={dropdownRef}
+    >
+      <label
+        className={cn("block font-medium text-sm mb-1", labelClassName)}
+        htmlFor={name}
+      >
         {label}
       </label>
       <div
-        className={clsx(
+        className={cn(
           "w-full border rounded-md h-14 px-4 flex items-center justify-between cursor-pointer transition-colors bg-white",
-          touched && error ? "border-red-500" : "border-light-active",
+          touched && error ? "border-red-500" : "border-gray-200",
           disabled
             ? "opacity-50 cursor-not-allowed bg-gray-50"
             : "hover:border-primary",
+          className,
         )}
         onClick={() => !disabled && setIsOpen(!isOpen)}
       >
         <span
-          className={clsx(
+          className={cn(
             "text-sm truncate",
-            !selectedOption ? "text-light-active" : "text-black",
+            !selectedOption ? "text-gray-400" : "text-black",
           )}
         >
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown
-          className={clsx(
+          className={cn(
             "w-5 h-5 text-gray-500 transition-transform duration-200",
             isOpen && "transform rotate-180",
           )}
@@ -102,7 +119,12 @@ const CustomSelect = ({
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-light-active rounded-md shadow-lg max-h-60 overflow-hidden flex flex-col">
+        <div
+          className={cn(
+            "absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-hidden flex flex-col",
+            contentClassName,
+          )}
+        >
           <div className="p-2 border-b border-gray-100 sticky top-0 bg-white z-10">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -122,10 +144,11 @@ const CustomSelect = ({
               filteredOptions.map((option) => (
                 <div
                   key={option.value}
-                  className={clsx(
+                  className={cn(
                     "px-4 py-3 text-sm cursor-pointer hover:bg-gray-50 transition-colors",
                     option.value === value &&
                       "bg-primary/5 text-primary font-medium",
+                    optionClassName,
                   )}
                   onClick={() => handleSelect(option.value)}
                 >

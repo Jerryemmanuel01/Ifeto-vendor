@@ -43,7 +43,7 @@ export default function EmptyState({
       {buttonText && onButtonClick && (
         <button
           onClick={onButtonClick}
-          className="w-full h-12 bg-[#27AE60] rounded-[6px] text-[18px] leading-8 text-white font-semibold"
+          className="w-full h-12 bg-[#27AE60] rounded-[6px] text-[18px] leading-8 text-white font-semibold cursor-pointer"
         >
           {buttonText}
         </button>

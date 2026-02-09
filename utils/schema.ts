@@ -81,3 +81,41 @@ export const AccountDetailsSchema = Yup.object({
     .required("Account Number is required")
     .min(5, "Account Number must be at least 5 characters"),
 });
+
+export const AddProductSchema = Yup.object({
+  itemName: Yup.string().trim().required("Item name is required"),
+
+  description: Yup.string()
+    .trim()
+    .required("Description is required")
+    .min(10, "Description must be at least 10 characters"),
+
+  baseCost: Yup.number()
+    .typeError("Enter a valid amount")
+    .required("Base cost is required")
+    .moreThan(0, "Amount must be greater than 0"),
+
+  weight: Yup.number()
+    .typeError("Enter a valid weight")
+    .required("Weight is required")
+    .moreThan(0, "Weight must be greater than 0"),
+
+  category: Yup.string().required("Category is required"),
+
+  storageInstructions: Yup.string()
+    .trim()
+    .max(500, "Maximum of 500 characters"),
+
+  images: Yup.array()
+    .min(3, "At least 3 images are required")
+    .max(5, "You can upload a maximum of 5 images"),
+});
+
+export const EditProductSchema = Yup.object({
+  name: Yup.string().required("Product name is required"),
+  weight: Yup.string().required("Weight is required"),
+  price: Yup.string().required("Price is required"),
+  images: Yup.array()
+    .min(3, "At least 3 images are required")
+    .max(5, "You can upload a maximum of 5 images"),
+});

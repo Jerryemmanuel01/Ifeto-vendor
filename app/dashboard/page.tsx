@@ -1,14 +1,5 @@
 "use client";
 
-import BusinessInfoForm from "@/components/onboarding/BusinessInfoForm";
-import BusinessDocumentForm from "@/components/onboarding/BusinessDocumentForm";
-import AccountDetailsForm from "@/components/onboarding/AccountDetailsForm";
-import OnboardingSteps from "@/components/onboarding/OnboardingSteps";
-import DashboardSkeleton from "@/components/skeletons/DashboardSkeleton";
-import { useGetProfileQuery } from "@/lib/features/profile/profileApi";
-
-("use client");
-
 import {
   Select,
   SelectContent,
@@ -28,6 +19,13 @@ import emptyIcon from "@/assets/svgs/empty-state.svg";
 import Image from "next/image";
 import EmptyState from "../../components/EmptyState";
 import OrdersTable from "../../components/dashboard/OrdersTable";
+
+import BusinessInfoForm from "@/components/onboarding/BusinessInfoForm";
+import BusinessDocumentForm from "@/components/onboarding/BusinessDocumentForm";
+import AccountDetailsForm from "@/components/onboarding/AccountDetailsForm";
+import OnboardingSteps from "@/components/onboarding/OnboardingSteps";
+import DashboardSkeleton from "@/components/skeletons/DashboardSkeleton";
+import { useGetProfileQuery } from "@/lib/features/profile/profileApi";
 
 export default function Page() {
   const router = useRouter();
@@ -77,7 +75,7 @@ export default function Page() {
   }
 
   return (
-    <div className="md:p-8 p-6 bg-[#FAFAFA] space-y-8 min-h-screen h-full flex flex-col">
+    <div className="bg-[#FAFAFA] space-y-8 min-h-screen h-full flex flex-col">
       <div className="space-y-5">
         <div className="flex items-start justify-between">
           <div className="md:space-y-2 space-y-3">

@@ -19,7 +19,6 @@ export const SignupSchema = Yup.object({
     .required("Confirm Password is required"),
 });
 
-<<<<<<< HEAD
 export const VerifyCodeSchema = Yup.object({
   code1: Yup.string().required("").matches(/^\d$/, ""),
   code2: Yup.string().required("").matches(/^\d$/, ""),
@@ -81,7 +80,8 @@ export const AccountDetailsSchema = Yup.object({
   accountNumber: Yup.string()
     .required("Account Number is required")
     .min(5, "Account Number must be at least 5 characters"),
-=======
+});
+
 export const AddProductSchema = Yup.object({
   itemName: Yup.string().trim().required("Item name is required"),
 
@@ -109,5 +109,13 @@ export const AddProductSchema = Yup.object({
   images: Yup.array()
     .min(3, "At least 3 images are required")
     .max(5, "You can upload a maximum of 5 images"),
->>>>>>> 7fb56f6 (pulling from main)
+});
+
+export const EditProductSchema = Yup.object({
+  name: Yup.string().required("Product name is required"),
+  weight: Yup.string().required("Weight is required"),
+  price: Yup.string().required("Price is required"),
+  images: Yup.array()
+    .min(3, "At least 3 images are required")
+    .max(5, "You can upload a maximum of 5 images"),
 });

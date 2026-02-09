@@ -2,23 +2,12 @@
 
 import Image from "next/image";
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
 
 import arrowLeft from "@/assets/svgs/arrow-left.svg";
 import danger from "@/assets/svgs/danger-red.svg";
 import exportIcon from "@/assets/svgs/export.svg";
 import editIcon from "@/assets/svgs/edit.svg";
-
-/* ================= VALIDATION ================= */
-
-const EditProductSchema = Yup.object({
-  name: Yup.string().required("Product name is required"),
-  weight: Yup.string().required("Weight is required"),
-  price: Yup.string().required("Price is required"),
-  images: Yup.array()
-    .min(3, "At least 3 images are required")
-    .max(5, "You can upload a maximum of 5 images"),
-});
+import { EditProductSchema } from "@/utils/schema";
 
 /* ================= IMAGE VALIDATION ================= */
 
@@ -60,9 +49,9 @@ export default function Page() {
       }}
     >
       {({ values, errors, touched, setFieldValue }) => (
-        <Form className="bg-[#FAFAFA] space-y-6 pb-10 flex flex-col px-6 md:px-8">
+        <Form className="bg-[#FAFAFA] space-y-6 pb-10 flex flex-col">
           {/* ===== Header ===== */}
-          <div className="flex md:flex-col gap-2 py-4 shadow-custom2">
+          <div className="flex md:flex-col gap-2 p-4 shadow-custom2">
             <div className="flex items-center gap-2">
               <Image src={arrowLeft} alt="back" />
               <p className="text-[16px] font-semibold text-[#787878]">back</p>

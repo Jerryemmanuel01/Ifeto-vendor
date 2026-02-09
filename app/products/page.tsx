@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ProductsTable from "@/components/products/ProductsTable";
+import Link from "next/link";
 
 export default function Page() {
   const router = useRouter();
@@ -118,7 +119,7 @@ export default function Page() {
   ];
 
   return (
-    <div className="md:p-8 p-6 bg-[#FAFAFA] space-y-8 min-h-screen h-full flex flex-col">
+    <div className="bg-[#FAFAFA] space-y-8 min-h-screen h-full flex flex-col">
       <div className="space-y-5">
         <div className="flex items-start justify-between">
           <div className="md:space-y-2 space-y-3">
@@ -131,10 +132,13 @@ export default function Page() {
             </p>
           </div>
 
-          <button className="px-5 py-2.5 bg-[#27AE60] rounded-[6px] text-[18px] leading-8 text-white font-semibold hidden md:flex items-center gap-2.5 cursor-pointer">
+          <Link
+            href={"/products/add-product"}
+            className="px-5 py-2.5 bg-[#27AE60] rounded-[6px] text-[18px] leading-8 text-white font-semibold hidden md:flex items-center gap-2.5 cursor-pointer"
+          >
             <Image src={add} alt="add-icon" />
             Add New Products
-          </button>
+          </Link>
         </div>
 
         <div className="w-full grid lg:grid-cols-4 grid-cols-2 gap-4">

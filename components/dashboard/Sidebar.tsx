@@ -65,25 +65,25 @@ const Sidebar = ({ isOpen, onClose, isLoading, userProfile }: SidebarProps) => {
     {
       name: "Products",
       icon: Package,
-      href: "/dashboard/products",
+      href: "/products",
       disabled: isOnboarding,
     },
     {
       name: "Orders",
       icon: ShoppingCart,
-      href: "/dashboard/orders",
+      href: "/orders",
       disabled: isOnboarding,
     },
     {
       name: "Analytics",
       icon: BarChart2,
-      href: "/dashboard/analytics",
+      href: "/analytics",
       disabled: isOnboarding,
     },
     {
       name: "Support",
       icon: Headphones,
-      href: "/dashboard/support",
+      href: "/support",
       disabled: isOnboarding,
     },
   ];
@@ -125,10 +125,10 @@ const Sidebar = ({ isOpen, onClose, isLoading, userProfile }: SidebarProps) => {
               {userProfile?.firstName} {userProfile?.lastName}
             </h2>
             <p
-              className={`${userProfile?.onboarding?.accountStatus !== "PENDING_APPROVAL" ? "text-[#9CA3AF]" : "text-primary"} flex gap-2 items-center text-sm mt-1 py-1 px-2 rounded-3xl bg-[#B0B0B01A]`}
+              className={`${userProfile?.onboarding?.accountStatus == "PENDING_APPROVAL" ? "text-[#9CA3AF]" : "text-primary"} flex gap-2 items-center text-sm mt-1 py-1 px-2 rounded-3xl bg-[#B0B0B01A]`}
             >
               <BadgeCheck className="w-4 h-4" />
-              {userProfile?.onboarding?.accountStatus !== "PENDING_APPROVAL"
+              {userProfile?.onboarding?.accountStatus == "PENDING_APPROVAL"
                 ? "Unverified Vendor"
                 : "Verified Vendor"}
             </p>

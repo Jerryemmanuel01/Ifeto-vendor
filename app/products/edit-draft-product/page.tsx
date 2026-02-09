@@ -59,7 +59,7 @@ export default function Page() {
         </div>
 
         <h1 className="md:text-[24px] text-[16px] md:leading-8 leading-6 text-[#5A5A5A] font-semibold md:w-full md:text-start w-full text-center">
-          Add New Product
+          Edit Draft
         </h1>
       </div>
 

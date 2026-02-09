@@ -61,7 +61,7 @@ export default function Page() {
       weight: "300g",
       price: 4200,
       stock: 85,
-      status: "pending",
+      status: "pending" as const,
       updatedAt: "2025-12-23",
     },
     {
@@ -74,7 +74,7 @@ export default function Page() {
       weight: undefined,
       price: 4200,
       stock: 20,
-      status: "rejected",
+      status: "rejected" as const,
       updatedAt: "2025-12-23",
     },
     {
@@ -87,7 +87,7 @@ export default function Page() {
       weight: "300g",
       price: 4200,
       stock: 31,
-      status: "approved",
+      status: "approved" as const,
       updatedAt: "2025-12-23",
     },
     {
@@ -100,7 +100,7 @@ export default function Page() {
       weight: "300g",
       price: 4200,
       stock: 12,
-      status: "approved",
+      status: "approved" as const,
       updatedAt: "2025-12-23",
     },
     {
@@ -113,7 +113,7 @@ export default function Page() {
       weight: "300g",
       price: 4200,
       stock: 14,
-      status: "draft",
+      status: "draft" as const,
       updatedAt: "2025-12-23",
     },
   ];
@@ -141,7 +141,7 @@ export default function Page() {
           </Link>
         </div>
 
-        <div className="w-full grid lg:grid-cols-4 grid-cols-2 gap-4">
+        <div className="w-full grid xl:grid-cols-4 grid-cols-2 gap-4">
           <MerticsCard
             title="Total Products"
             value={0}

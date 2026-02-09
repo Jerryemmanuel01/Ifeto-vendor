@@ -121,7 +121,7 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="w-full grid lg:grid-cols-4 grid-cols-2 gap-4">
+        <div className="w-full grid xl:grid-cols-4 grid-cols-2 gap-4">
           <MerticsCard
             title="New Orders"
             value={0}

@@ -7,13 +7,24 @@ import { useState } from "react";
 
 import { useGetProfileQuery } from "@/lib/features/profile/profileApi";
 
+import useRequireAuth from "@/hooks/useRequireAuth";
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { loading: authLoading } = useRequireAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { data: userProfile, isLoading } = useGetProfileQuery();
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">

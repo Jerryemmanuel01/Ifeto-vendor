@@ -45,7 +45,9 @@ export const VerifyCodeSchema = Yup.object({
 
 export const LoginSchema = Yup.object({
   email: Yup.string().email("Invalid email").required("Email is required"),
-  password: Yup.string().required("Password is required"),
+  password: Yup.string()
+    .matches(passwordRegex, passwordMessage)
+    .required("Password is required"),
 });
 
 export const ForgotPasswordSchema = Yup.object({

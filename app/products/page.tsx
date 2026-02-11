@@ -28,6 +28,8 @@ import {
 import ProductsTable from "@/components/products/ProductsTable";
 import Link from "next/link";
 
+import { useGetProductsQuery } from "@/lib/features/products/productsApi";
+
 export default function Page() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -37,6 +39,16 @@ export default function Page() {
     category: searchParams.get("category") ?? "all",
     sortBy: searchParams.get("sort") ?? "recent",
     search: searchParams.get("q") ?? "",
+  });
+
+  const { data: productsData, isLoading } = useGetProductsQuery({
+    page: 1,
+    limit: 50,
+    categoryId: filters.category,
+    search: filters.search,
+    // Status and Sort are not explicitly supported by API swagger but requested in UI
+    // status: filters.status,
+    // sort: filters.sortBy
   });
 
   useEffect(() => {
@@ -50,73 +62,37 @@ export default function Page() {
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [filters, router]);
 
-  const products = [
-    {
-      id: "1",
-      product: {
-        name: "Fresh Cabbage",
-        image: "/images/cabbage.png",
-      },
-      category: "Fruits & Vegetables",
-      weight: "300g",
-      price: 4200,
-      stock: 85,
-      status: "pending" as const,
-      updatedAt: "2025-12-23",
-    },
-    {
-      id: "2",
-      product: {
-        name: "Fresh Cabbage",
-        image: "/images/cabbage.png",
-      },
-      category: "Proteins",
-      weight: undefined,
-      price: 4200,
-      stock: 20,
-      status: "rejected" as const,
-      updatedAt: "2025-12-23",
-    },
-    {
-      id: "3",
-      product: {
-        name: "Fresh Cabbage",
-        image: "/images/cabbage.png",
-      },
-      category: "Tubers & Nuts",
-      weight: "300g",
-      price: 4200,
-      stock: 31,
-      status: "approved" as const,
-      updatedAt: "2025-12-23",
-    },
-    {
-      id: "4",
-      product: {
-        name: "Fresh Cabbage",
-        image: "/images/cabbage.png",
-      },
-      category: "Herbs & Spices",
-      weight: "300g",
-      price: 4200,
-      stock: 12,
-      status: "approved" as const,
-      updatedAt: "2025-12-23",
-    },
-    {
-      id: "5",
-      product: {
-        name: "Fresh Cabbage",
-        image: "/images/cabbage.png",
-      },
-      category: "Fruits & Vegetables",
-      weight: "300g",
-      price: 4200,
-      stock: 14,
-      status: "draft" as const,
-      updatedAt: "2025-12-23",
-    },
-  ];
+  // Transform API data to match UI component structure
+  const products =
+    productsData?.data?.data?.map((item) => {
+      let status: "pending" | "approved" | "rejected" | "draft" = "pending";
+
+      if (item.status === "DRAFT") {
+        status = "draft";
+      } else if (item.status === "PUBLISHED") {
+        if (item.approvalStatus === "APPROVED") status = "approved";
+        else if (item.approvalStatus === "REJECTED") status = "rejected";
+        else status = "pending";
+      }
+
+      return {
+        id: item.id,
+        product: {
+          name: item.name,
+          image: item.images?.[0] || "/images/placeholder.png", // Fallback image
+        },
+        category: item.category?.name || "Uncategorized",
+        weight: item.weight ? `${item.weight}kg` : "N/A",
+        price: item.sellingPrice,
+        stock: item.quantity,
+        status,
+        updatedAt: item.updatedAt,
+      };
+    }) || [];
+
+  const totalProducts = productsData?.data?.meta?.total || 0;
+  // We can't calculate other status counts reliably without separate API calls or returning all data
+  // For now, we will use the total for "Total Products" and 0 for others or roughly filter if implementing client side
 
   return (
     <div className="bg-[#FAFAFA] space-y-8 min-h-screen h-full flex flex-col">
@@ -144,7 +120,7 @@ export default function Page() {
         <div className="w-full grid xl:grid-cols-4 grid-cols-2 gap-4">
           <MerticsCard
             title="Total Products"
-            value={0}
+            value={totalProducts}
             description="All products you’ve added"
             icon={<Image src={bag} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
             iconBg={"#2E0BF51A"}
@@ -179,15 +155,15 @@ export default function Page() {
         </div>
       </div>
 
-      <div className="flex md:items-center items-start md:flex-row flex-col justify-between gap-4">
-        <form className="md:max-w-[528px] w-full flex items-center">
+      <div className="flex flex-col lg:flex-row justify-between gap-4 items-start lg:items-center w-full transition-all">
+        <form className="w-full lg:max-w-[450px] xl:max-w-[528px] flex items-center">
           <div className="relative w-full">
             <input
               value={filters.search}
               onChange={(e) =>
                 setFilters((prev) => ({ ...prev, search: e.target.value }))
               }
-              className="w-full bg-white h-12 rounded-2xl px-10 border-[0.6px] border-[#EFEEEE]"
+              className="w-full text-sm bg-white h-10 rounded-xl px-10 border-[0.6px] border-[#EFEEEE] focus:border-[#27AE60] focus:ring-1 focus:ring-[#27AE60] transition-all outline-none"
               placeholder="Search by product name"
               maxLength={50}
             />
@@ -196,30 +172,30 @@ export default function Page() {
               <button
                 type="button"
                 onClick={() => setFilters((prev) => ({ ...prev, search: "" }))}
-                className="absolute top-3.5 right-3 text-gray-400 text-sm"
+                className="absolute top-3 right-3 text-gray-400 text-sm hover:text-gray-600"
               >
                 ✕
               </button>
             )}
 
             <Image
-              className="absolute top-3.5 left-3 w-5 h-5"
+              className="absolute top-3 left-3 w-4 h-4 pointer-events-none"
               src={search}
               alt="search"
             />
           </div>
         </form>
 
-        <div className="overflow-x-auto w-full">
-          <div className="flex items-center md:justify-end justify-start gap-3 min-w-[400px] w-full">
+        <div className="w-full lg:w-auto">
+          <div className="grid grid-cols-3 gap-2 w-full">
             <Select
               value={filters.status}
               onValueChange={(value) =>
                 setFilters((prev) => ({ ...prev, status: value }))
               }
             >
-              <SelectTrigger className="py-3 px-4 text-[16px] font-semibold">
-                <SelectValue placeholder="All Status" />
+              <SelectTrigger className="h-10 px-2 md:px-4 text-xs md:text-sm font-semibold w-full bg-white">
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
 
               <SelectContent>
@@ -238,8 +214,8 @@ export default function Page() {
                 setFilters((prev) => ({ ...prev, category: value }))
               }
             >
-              <SelectTrigger className="py-3 px-4 text-[16px] font-semibold">
-                <SelectValue placeholder="All Categories" />
+              <SelectTrigger className="h-10 px-2 md:px-4 text-xs md:text-sm font-semibold w-full bg-white">
+                <SelectValue placeholder="Category" />
               </SelectTrigger>
 
               <SelectContent>
@@ -258,8 +234,8 @@ export default function Page() {
                 setFilters((prev) => ({ ...prev, sortBy: value }))
               }
             >
-              <SelectTrigger className="py-3 px-4 text-[16px] font-semibold">
-                <SelectValue placeholder="Recently Updated" />
+              <SelectTrigger className="h-10 px-2 md:px-4 text-xs md:text-sm font-semibold w-full bg-white">
+                <SelectValue placeholder="Sort" />
               </SelectTrigger>
 
               <SelectContent>
@@ -275,19 +251,19 @@ export default function Page() {
       </div>
 
       <div className="flex-1 flex w-full">
-        {products.length === 0 ? (
+        {!isLoading && products.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
             <EmptyState
               icon={emptyIcon}
               title="No products added yet"
               description="Start selling by adding your first product."
               buttonText="Add New Products"
-              onButtonClick={() => router.push("/")}
+              onButtonClick={() => router.push("/products/add-product")}
             />
           </div>
         ) : (
           <div className="w-full">
-            <ProductsTable products={products} isLoading={false} />
+            <ProductsTable products={products} isLoading={isLoading} />
           </div>
         )}
       </div>

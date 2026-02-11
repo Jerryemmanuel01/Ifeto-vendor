@@ -1,6 +1,5 @@
-"use client";
-
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +17,7 @@ import edit from "@/assets/svgs/edit.svg";
 import Image from "next/image";
 
 type Product = {
+  id: string;
   product: {
     name: string;
     image: string;
@@ -44,22 +44,22 @@ export default function ProductsTable({
 
   const statusMap = {
     pending: (
-      <span className="px-4 py-1 text-[16px] leading-6 capitalize rounded-full bg-[#F59E0B1A] text-[#F59E0B]">
+      <span className="px-4 py-1 text-xs leading-6 capitalize rounded-full bg-[#F59E0B1A] text-[#F59E0B]">
         Pending
       </span>
     ),
     approved: (
-      <span className="px-4 py-1 text-[16px] leading-6 capitalize rounded-full bg-[#34C7591A] text-[#34C759]">
+      <span className="px-4 py-1 text-xs leading-6 capitalize rounded-full bg-[#34C7591A] text-[#34C759]">
         Approved
       </span>
     ),
     rejected: (
-      <span className="px-4 py-1 text-[16px] leading-6 capitalize rounded-full bg-[#E53E3E1A] text-[#E53E3E]">
+      <span className="px-4 py-1 text-xs leading-6 capitalize rounded-full bg-[#E53E3E1A] text-[#E53E3E]">
         Rejected
       </span>
     ),
     draft: (
-      <span className="px-4 py-1 text-[16px] leading-6 capitalize rounded-full bg-[#EFEEEE] text-[#787878]">
+      <span className="px-4 py-1 text-xs leading-6 capitalize rounded-full bg-[#EFEEEE] text-[#787878]">
         Draft
       </span>
     ),
@@ -73,7 +73,7 @@ export default function ProductsTable({
           <div className="w-12 h-12 rounded bg-[#EFEEEE] flex items-center justify-center">
             <img src={row.product.image} className="w-9 h-9 rounded" />
           </div>
-          <span className="line-clamp-1 text-[14px] leading-5 font-semibold text-[#5A5A5A]">
+          <span className="line-clamp-1 leading-5 font-semibold text-[#5A5A5A]">
             {row.product.name}
           </span>
         </div>
@@ -81,13 +81,13 @@ export default function ProductsTable({
     },
     {
       header: "Category",
-      render: (row) => <p className="line-clamp-2">{row.category}</p>,
+      render: (row) => <p className="line-clamp-2 ">{row.category}</p>,
     },
     { header: "Weight", accessor: "weight" },
     {
       header: "Price",
       render: (row) => (
-        <p className="font-semibold text-[#2A2A2A]">{`₦${row.price.toLocaleString()}`}</p>
+        <p className="font-semibold text-[#2A2A2A]">{`₦${row.price?.toLocaleString()}`}</p>
       ),
     },
     { header: "Stock", accessor: "stock" },
@@ -100,10 +100,28 @@ export default function ProductsTable({
         </div>
       ),
     },
-    { header: "Last Updated", accessor: "updatedAt" },
+    {
+      header: "Last Updated",
+      render: (row) => (
+        <span className="text-[#5A5A5A]">
+          {new Date(row.updatedAt).toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })}{" "}
+          <span className="text-[#737c87] text-[10px]">
+            {new Date(row.updatedAt).toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "numeric",
+              hour12: true,
+            })}
+          </span>
+        </span>
+      ),
+    },
     {
       header: "Actions",
-      render: () => (
+      render: (row) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="p-2 rounded-md hover:bg-gray-100">
@@ -116,8 +134,13 @@ export default function ProductsTable({
               <Image src={eye} alt="eye-icon" /> <span>View</span>
             </DropdownMenuItem>
 
-            <DropdownMenuItem className="flex gap-2 px-2 py-4">
-              <Image src={edit} alt="edit-icon" /> <span>Edit</span>
+            <DropdownMenuItem asChild>
+              <Link
+                href={`/products/edit-product?id=${row.id}`}
+                className="flex gap-2 px-2 py-4 cursor-pointer w-full"
+              >
+                <Image src={edit} alt="edit-icon" /> <span>Edit</span>
+              </Link>
             </DropdownMenuItem>
 
             <DropdownMenuItem className="flex gap-2 px-2 py-4">

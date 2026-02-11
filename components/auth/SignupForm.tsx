@@ -7,7 +7,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
 import { useGetCountriesQuery } from "@/lib/features/common/commonApi";
-import CustomSelect from "@/components/general/CustomSelect";
+import { CustomSelect } from "@/components/general/CustomSelect";
 import useSignup from "@/hooks/form-hooks/useSignup";
 
 const SignupForm = () => {
@@ -136,7 +136,9 @@ const SignupForm = () => {
               label="Country"
               name="country"
               value={formik.values.country}
-              onChange={(name, value) => formik.setFieldValue(name, value)}
+              onChange={(name: string, value: string | number) =>
+                formik.setFieldValue(name, value)
+              }
               options={countries.map((c: any) => ({
                 label: c.name,
                 value: c.name,

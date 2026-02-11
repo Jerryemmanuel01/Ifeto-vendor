@@ -19,7 +19,7 @@ export default function MetricsCard({
 }: MetricsCardProps) {
   return (
     <div
-      className={`md:min-w-[255px] w-full border-[0.6px] bg-white border-[#EFEEEE] shadow-custom2 md:p-4 p-3 flex items-start md:gap-4 gap-2 rounded-lg ${className}`}
+      className={`md:min-w-[225px] w-full border-[0.6px] bg-white border-[#EFEEEE] shadow-custom2 md:p-4 p-3 flex items-start md:gap-4 gap-2 rounded-lg ${className}`}
     >
       <div
         style={{ backgroundColor: iconBg }}

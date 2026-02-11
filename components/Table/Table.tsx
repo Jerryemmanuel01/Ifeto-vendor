@@ -34,7 +34,7 @@ export default function Table<T>({
           <SkeletonHeader columns={loadingcolumns} />
         ) : (
           <div
-            className="grid bg-[#EFEEEE] px-6 py-3 text-[14px] leading-5 font-semibold text-[#5A5A5A] rounded-t-lg"
+            className="grid bg-[#EFEEEE] px-6 py-3 text-xs lg:text-sm leading-5 font-semibold text-[#5A5A5A] rounded-t-lg"
             style={{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }}
           >
             {columns.map((col, index) => (
@@ -52,7 +52,7 @@ export default function Table<T>({
             : data.map((row, rowIndex) => (
                 <div
                   key={rowIndex}
-                  className="grid items-center px-6 py-5 text-[14px] leading-5 text-[#564848]"
+                  className="grid items-center px-6 py-5 text-xs lg:text-sm leading-5 text-[#564848]"
                   style={{
                     gridTemplateColumns: `repeat(${columns.length}, 1fr)`,
                   }}

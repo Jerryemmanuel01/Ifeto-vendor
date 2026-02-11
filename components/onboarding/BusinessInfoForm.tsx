@@ -3,7 +3,7 @@
 import { Mail } from "lucide-react";
 import Image from "next/image";
 import PhoneInput from "react-phone-input-2";
-import CustomSelect from "@/components/general/CustomSelect";
+import { CustomSelect } from "@/components/general/CustomSelect";
 import "react-phone-input-2/lib/style.css";
 import useBusinessInfo from "@/hooks/form-hooks/useBusinessInfo";
 
@@ -56,7 +56,9 @@ const BusinessInfoForm = () => {
               className="h-12"
               name="businessType"
               value={formik.values.businessType}
-              onChange={(name, value) => formik.setFieldValue(name, value)}
+              onChange={(name: string, value: string | number) =>
+                formik.setFieldValue(name, value)
+              }
               options={[
                 { label: "Sole Proprietorship", value: "sole_proprietorship" },
                 {

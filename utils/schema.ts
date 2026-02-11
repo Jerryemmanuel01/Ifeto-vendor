@@ -100,6 +100,12 @@ export const AddProductSchema = Yup.object({
     .required("Weight is required")
     .moreThan(0, "Weight must be greater than 0"),
 
+  quantity: Yup.number()
+    .typeError("Enter a valid quantity")
+    .required("Quantity is required")
+    .integer("Quantity must be an integer")
+    .min(1, "Quantity must be at least 1"),
+
   category: Yup.string().required("Category is required"),
 
   storageInstructions: Yup.string()

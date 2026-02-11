@@ -1,150 +1,231 @@
 "use client";
 
 import Image from "next/image";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Form, Field, ErrorMessage, FormikProvider } from "formik";
+import Link from "next/link";
+import { Loader2 } from "lucide-react";
 
 import arrowLeft from "@/assets/svgs/arrow-left.svg";
-import danger from "@/assets/svgs/danger-red.svg";
 import exportIcon from "@/assets/svgs/export.svg";
-import editIcon from "@/assets/svgs/edit.svg";
-import { EditProductSchema } from "@/utils/schema";
-
-/* ================= IMAGE VALIDATION ================= */
-
-const validateImage = async (file: File): Promise<string | undefined> => {
-  if (
-    !["image/png", "image/jpeg", "image/jpg", "image/webp"].includes(file.type)
-  ) {
-    return "Unsupported format";
-  }
-
-  if (file.size > 5 * 1024 * 1024) {
-    return "File too large (max 5MB)";
-  }
-
-  const img = document.createElement("img");
-  img.src = URL.createObjectURL(file);
-
-  await new Promise((res) => (img.onload = res));
-
-  if (img.width < 800) {
-    return "Min width is 800px";
-  }
-};
-
-/* ================= PAGE ================= */
+import { useEditProduct } from "@/hooks/actions/useEditProduct";
+import { CustomSelect } from "@/components/general/CustomSelect";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
+  const router = useRouter();
+  const {
+    formik,
+    isLoading,
+    isLoadingCategories,
+    categories,
+    handleImageUpload,
+    removeImage,
+    handleSubmitReview,
+    isProductLoaded,
+  } = useEditProduct();
+
+  if (isLoading && !isProductLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-10 h-10 animate-spin text-[#27AE60]" />
+      </div>
+    );
+  }
+
   return (
-    <Formik
-      initialValues={{
-        name: "Yellow Garri",
-        weight: "",
-        price: "₦1,200",
-        images: [] as { file: File; error?: string }[],
-      }}
-      validationSchema={EditProductSchema}
-      onSubmit={(values) => {
-        console.log("SUBMIT", values);
-      }}
-    >
-      {({ values, errors, touched, setFieldValue }) => (
-        <Form className="bg-[#FAFAFA] space-y-6 pb-10 flex flex-col">
-          {/* ===== Header ===== */}
-          <div className="flex md:flex-col gap-2 p-4 shadow-custom2">
-            <div className="flex items-center gap-2">
-              <Image src={arrowLeft} alt="back" />
-              <p className="text-[16px] font-semibold text-[#787878]">back</p>
+    <div className="bg-[#FAFAFA] space-y-6 min-h-screen h-full flex flex-col">
+      <div className="flex md:flex-col gap-2 md:py-6 py-3 md:px-8 px-6 shadow-custom2 flex-row">
+        <div
+          onClick={() => router.back()}
+          className="flex items-center gap-2 cursor-pointer w-fit"
+        >
+          <Image src={arrowLeft} alt="arrow-back" />
+          <p className="text-[16px] leading-6 font-semibold text-[#787878]">
+            back
+          </p>
+        </div>
+
+        <h1 className="md:text-[24px] text-[16px] md:leading-8 leading-6 text-[#5A5A5A] font-semibold md:w-full md:text-start w-full text-center">
+          Edit Product
+        </h1>
+      </div>
+
+      <div className="w-full h-full">
+        <FormikProvider value={formik}>
+          <Form
+            className="md:px-8 px-6 bg-[#FFFFFF] md:py-6 py-4 space-y-4"
+            onSubmit={formik.handleSubmit}
+          >
+            {/* Item Name */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[14px] leading-5">
+                Item Name <span className="text-[#B3261E]">*</span>
+              </label>
+
+              <Field
+                name="itemName"
+                placeholder="e.g., Organic Tomatoes"
+                className={`text-[14px] leading-5 placeholder:text-[#CFCFCF] h-12 w-full px-4 rounded-[6px] border ${
+                  formik.touched.itemName && formik.errors.itemName
+                    ? "border-[#B3261E]"
+                    : "border-[#CFCFCF]"
+                }`}
+              />
+
+              <ErrorMessage
+                name="itemName"
+                component="p"
+                className="text-[12px] text-[#B3261E]"
+              />
             </div>
 
-            <h1 className="text-[16px] md:text-[24px] font-semibold text-[#5A5A5A] text-center md:text-left">
-              Edit Product
-            </h1>
-          </div>
+            {/* Description */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[14px] leading-5">
+                Description <span className="text-[#B3261E]">*</span>
+              </label>
 
-          {/* ===== Rejection Notice ===== */}
-          <div className="bg-[#E53E3E0A] rounded-lg p-3 border-l-[3px] border-[#E53E3E] flex gap-3">
-            <Image src={danger} alt="danger" />
-            <div>
-              <h5 className="text-[#B3261E] text-[14px] font-semibold">
-                Product Rejected
-              </h5>
-              <p className="text-[14px] text-[#787878]">
-                <span className="font-bold">Admin Note:</span> Weight missing
-                and product images do not meet quality standards.
-              </p>
-            </div>
-          </div>
+              <Field
+                as="textarea"
+                name="description"
+                rows={4}
+                maxLength={500}
+                placeholder="Describe your product in detail..."
+                className={`text-[14px] leading-5 placeholder:text-[#CFCFCF] w-full px-4 py-3 rounded-[6px] resize-none border ${
+                  formik.touched.description && formik.errors.description
+                    ? "border-[#B3261E]"
+                    : "border-[#CFCFCF]"
+                }`}
+              />
 
-          {/* ===== Product Info ===== */}
-          <div className="space-y-6">
-            {/* Product name */}
-            <div className="flex flex-col md:flex-row gap-6 md:items-center">
-              <div className="w-32 h-28 bg-[#EFEEEE] flex items-center justify-center rounded-md">
-                <Image
-                  src="/images/cabbage.png"
-                  alt=""
-                  width={90}
-                  height={60}
-                />
+              <div className="flex items-center justify-between text-[14px] leading-5 text-[#667185]">
+                <p>Rich text, maximum 500 characters</p>
+                <p>{formik.values.description.length}/500</p>
               </div>
 
-              <div className="flex-1">
-                <label className="text-[14px] text-[#787878]">
-                  Product Name
+              <ErrorMessage
+                name="description"
+                component="p"
+                className="text-[12px] text-[#B3261E]"
+              />
+            </div>
+
+            {/* Base Cost & Quantity */}
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex flex-col gap-1 flex-1">
+                <label className="text-[14px] leading-5">
+                  Base Cost (₦) <span className="text-[#B3261E]">*</span>
                 </label>
-                <div className="flex items-center bg-white h-12 px-4 rounded-md">
-                  <Field
-                    name="name"
-                    className="flex-1 outline-none text-[14px]"
-                  />
-                  <Image src={editIcon} alt="edit" />
-                </div>
+
+                <Field
+                  name="baseCost"
+                  type="number"
+                  placeholder="e.g., 2500.00"
+                  className={`text-[14px] leading-5 placeholder:text-[#CFCFCF] h-12 w-full px-4 rounded-[6px] border ${
+                    formik.touched.baseCost && formik.errors.baseCost
+                      ? "border-[#B3261E]"
+                      : "border-[#CFCFCF]"
+                  }`}
+                />
+
                 <ErrorMessage
-                  name="name"
+                  name="baseCost"
+                  component="p"
+                  className="text-[12px] text-[#B3261E]"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1 flex-1">
+                <label className="text-[14px] leading-5">
+                  Quantity <span className="text-[#B3261E]">*</span>
+                </label>
+
+                <Field
+                  name="quantity"
+                  type="number"
+                  placeholder="e.g., 100"
+                  className={`text-[14px] leading-5 placeholder:text-[#CFCFCF] h-12 w-full px-4 rounded-[6px] border ${
+                    formik.touched.quantity && formik.errors.quantity
+                      ? "border-[#B3261E]"
+                      : "border-[#CFCFCF]"
+                  }`}
+                />
+
+                <ErrorMessage
+                  name="quantity"
                   component="p"
                   className="text-[12px] text-[#B3261E]"
                 />
               </div>
             </div>
 
-            {/* Weight & Price */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-[14px] text-[#787878]">Weight</label>
-                <div className="flex items-center bg-white h-12 px-4 rounded-md">
-                  <Field
-                    name="weight"
-                    placeholder="Enter product weight"
-                    className="flex-1 outline-none text-[14px]"
-                  />
-                  <Image src={editIcon} alt="edit" />
-                </div>
-                <ErrorMessage
-                  name="weight"
-                  component="p"
-                  className="text-[12px] text-[#B3261E]"
-                />
-              </div>
+            {/* Weight & Category */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[14px] leading-5">
+                Weight (kg) <span className="text-[#B3261E]">*</span>
+              </label>
 
-              <div>
-                <label className="text-[14px] text-[#787878]">Price</label>
-                <div className="flex items-center bg-white h-12 px-4 rounded-md">
-                  <Field
-                    name="price"
-                    className="flex-1 outline-none text-[14px]"
-                  />
-                  <Image src={editIcon} alt="edit" />
-                </div>
-                <ErrorMessage
-                  name="price"
-                  component="p"
-                  className="text-[12px] text-[#B3261E]"
-                />
-              </div>
+              <Field
+                name="weight"
+                type="number"
+                placeholder="e.g., 1.5"
+                className={`text-[14px] leading-5 placeholder:text-[#CFCFCF] h-12 w-full px-4 rounded-[6px] border ${
+                  formik.touched.weight && formik.errors.weight
+                    ? "border-[#B3261E]"
+                    : "border-[#CFCFCF]"
+                }`}
+              />
+
+              <p className="flex items-center justify-between text-[14px] leading-5 text-[#667185]">
+                Only numerical values are allowed
+              </p>
+
+              <ErrorMessage
+                name="weight"
+                component="p"
+                className="text-[12px] text-[#B3261E]"
+              />
             </div>
 
-            {/* ===== IMAGE UPLOAD (YOUR EXACT UI) ===== */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[14px] leading-5">
+                Category <span className="text-[#B3261E]">*</span>
+              </label>
+
+              <CustomSelect
+                label=""
+                name="category"
+                options={categories.map((cat) => ({
+                  value: cat.id,
+                  label: cat.name,
+                  image: cat.image,
+                }))}
+                value={formik.values.category}
+                onChange={(name: string, value: string | number) =>
+                  formik.setFieldValue(name, value)
+                }
+                placeholder={
+                  isLoadingCategories
+                    ? "Loading categories..."
+                    : "Select a category"
+                }
+                disabled={isLoadingCategories}
+                error={
+                  formik.touched.category &&
+                  typeof formik.errors.category === "string"
+                    ? formik.errors.category
+                    : undefined
+                }
+              />
+
+              <ErrorMessage
+                name="category"
+                component="p"
+                className="text-[12px] text-[#B3261E]"
+              />
+            </div>
+
+            {/* Images */}
             <div className="flex flex-col gap-2">
               <input
                 id="imageUpload"
@@ -152,51 +233,23 @@ export default function Page() {
                 accept="image/png, image/jpeg, image/jpg, image/webp"
                 multiple
                 hidden
-                onChange={async (event) => {
-                  const MAX_IMAGES = 5;
-
-                  const remainingSlots = MAX_IMAGES - values.images.length;
-
-                  if (remainingSlots <= 0) {
-                    event.currentTarget.value = "";
-                    return;
-                  }
-
-                  const files = Array.from(
-                    event.currentTarget.files || [],
-                  ).slice(0, remainingSlots);
-
-                  const validated = await Promise.all(
-                    files.map(async (file) => ({
-                      file,
-                      error: await validateImage(file),
-                    })),
-                  );
-
-                  setFieldValue("images", [...values.images, ...validated]);
-
-                  // 🔑 Reset input so same file can be re-selected later
-                  event.currentTarget.value = "";
-                }}
+                onChange={(e) => handleImageUpload(e.target.files)}
               />
 
               <label className="text-[14px] leading-5">
                 Product Images <span className="text-[#B3261E]">*</span>
               </label>
 
-              {/* ===== EMPTY STATE (FULL WIDTH) ===== */}
-              {values.images.length === 0 && (
+              {formik.values.images.length === 0 && (
                 <div
                   onClick={() =>
                     document.getElementById("imageUpload")?.click()
                   }
-                  className={`border border-dashed rounded-[8px] p-6 text-center cursor-pointer
-        ${
-          touched.images && errors.images
-            ? "border-[#B3261E]"
-            : "border-[#CFCFCF]"
-        }
-      `}
+                  className={`border border-dashed rounded-[8px] p-6 text-center cursor-pointer transition-colors ${
+                    formik.touched.images && formik.errors.images
+                      ? "border-[#B3261E]"
+                      : "border-[#CFCFCF]"
+                  }`}
                 >
                   <div className="flex flex-col items-center gap-2 text-[#667185]">
                     <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -218,7 +271,7 @@ export default function Page() {
                     </svg>
 
                     <p className="text-[14px]">
-                      Click to upload images (minimum 3 required)
+                      Click to upload images (minimum 1 required)
                     </p>
 
                     <p className="text-[12px]">
@@ -228,29 +281,22 @@ export default function Page() {
                 </div>
               )}
 
-              {/* ===== GRID STATE ===== */}
-              {values.images.length > 0 && (
+              {formik.values.images.length > 0 && (
                 <div className="grid grid-cols-3 gap-4">
-                  {/* Images */}
-                  {values.images.map((img, index) => (
+                  {formik.values.images.map((img: any, index: number) => (
                     <div
                       key={index}
-                      className="relative group md:h-[326px] h-[101px] rounded-[8px] overflow-hidden"
+                      className="relative group md:h-[326px] h-[101px] rounded-[8px] overflow-hidden bg-gray-100"
                     >
                       <img
-                        src={URL.createObjectURL(img.file)}
+                        src={img.file ? URL.createObjectURL(img.file) : img.url}
                         alt="preview"
                         className="h-full w-full object-cover"
                       />
 
                       <button
                         type="button"
-                        onClick={() => {
-                          const updated = values.images.filter(
-                            (_, i) => i !== index,
-                          );
-                          setFieldValue("images", updated);
-                        }}
+                        onClick={() => removeImage(index)}
                         className="absolute top-2 right-2 hidden group-hover:flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white text-xs"
                       >
                         ✕
@@ -264,23 +310,21 @@ export default function Page() {
                     </div>
                   ))}
 
-                  {/* Add more tile */}
-                  {values.images.length < 5 && (
+                  {formik.values.images.length < 5 && (
                     <div
                       onClick={() =>
                         document.getElementById("imageUpload")?.click()
                       }
                       className={`
-    w-full
-    aspect-[4/3] sm:aspect-[1/1]
-    border border-dashed rounded-[8px]
-    flex flex-col items-center justify-center
-    gap-1 sm:gap-2
-    cursor-pointer text-center
-    transition-colors md:h-[326px] h-[101px]
-
-    ${touched.images && errors.images ? "border-[#B3261E]" : "border-[#CFCFCF]"}
-  `}
+                        w-full aspect-[4/3] sm:aspect-[1/1] border border-dashed rounded-[8px]
+                        flex flex-col items-center justify-center gap-1 sm:gap-2
+                        cursor-pointer text-center transition-colors md:h-[326px] h-[101px]
+                        ${
+                          formik.touched.images && formik.errors.images
+                            ? "border-[#B3261E]"
+                            : "border-[#CFCFCF]"
+                        }
+                      `}
                     >
                       <Image
                         src={exportIcon}
@@ -290,10 +334,6 @@ export default function Page() {
 
                       <p className="text-[13px] sm:text-[14px] md:text-[18px] leading-6 font-medium text-[#667185]">
                         Add More
-                      </p>
-
-                      <p className="text-[10px] sm:text-[11px] md:text-[12px] leading-4 text-[#98A2B3] px-2">
-                        2 images, min 800px width, max 5MB each
                       </p>
                     </div>
                   )}
@@ -306,26 +346,53 @@ export default function Page() {
                 className="text-[12px] text-[#B3261E]"
               />
             </div>
-          </div>
 
-          {/* ===== Actions ===== */}
-          <div className="flex flex-col md:flex-row gap-4 pt-6">
-            <button
-              type="submit"
-              className="md:flex-1 h-12 bg-[#27AE60] text-white rounded-md font-semibold"
-            >
-              Resubmit for Review
-            </button>
+            {/* Storage Instructions */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[14px] leading-5 text-[#5A5A5A]">
+                Storage Instructions (Optional)
+              </label>
 
-            <button
-              type="button"
-              className="md:flex-1 h-12 border border-[#27AE60] text-[#27AE60] rounded-md font-semibold"
-            >
-              Cancel
-            </button>
-          </div>
-        </Form>
-      )}
-    </Formik>
+              <Field
+                as="textarea"
+                name="storageInstructions"
+                rows={4}
+                placeholder="e.g., Store in a cool, dry place"
+                className="text-[14px] leading-5 placeholder:text-[#CFCFCF] w-full px-4 py-3 rounded-[6px] resize-none border border-[#CFCFCF]"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col md:flex-row gap-4 pt-6">
+              <button
+                type="button"
+                onClick={() => handleSubmitReview()}
+                disabled={isLoading}
+                className={`px-5 h-12 rounded-[6px] text-[18px] leading-8 font-semibold w-full cursor-pointer flex items-center justify-center gap-2 transition-colors
+                  ${
+                    formik.isValid
+                      ? "bg-[#27AE60] text-white hover:bg-[#219653]"
+                      : "bg-[#E0E0E0] text-[#A0A0A0] cursor-not-allowed"
+                  }
+                `}
+              >
+                {isLoading && (
+                  <Loader2 className="w-5 h-5 animate-spin text-current" />
+                )}
+                Update Product
+              </button>
+
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="md:flex-1 h-12 border border-[#27AE60] text-[#27AE60] rounded-md font-semibold"
+              >
+                Cancel
+              </button>
+            </div>
+          </Form>
+        </FormikProvider>
+      </div>
+    </div>
   );
 }

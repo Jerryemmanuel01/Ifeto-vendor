@@ -7,6 +7,7 @@ import { cn } from "@/utils/utils";
 interface Option {
   label: string;
   value: string | number;
+  image?: string;
 }
 
 interface CustomSelectProps {
@@ -26,7 +27,7 @@ interface CustomSelectProps {
   contentClassName?: string; // For dropdown content wrapper
 }
 
-const CustomSelect = ({
+export const CustomSelect = ({
   label,
   name,
   value,
@@ -104,10 +105,17 @@ const CustomSelect = ({
       >
         <span
           className={cn(
-            "text-sm truncate",
+            "text-sm truncate flex items-center gap-2",
             !selectedOption ? "text-gray-400" : "text-black",
           )}
         >
+          {selectedOption?.image && (
+            <img
+              src={selectedOption.image}
+              alt=""
+              className="w-6 h-6 rounded-sm object-cover"
+            />
+          )}
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown
@@ -145,14 +153,21 @@ const CustomSelect = ({
                 <div
                   key={option.value}
                   className={cn(
-                    "px-4 py-3 text-sm cursor-pointer hover:bg-gray-50 transition-colors",
+                    "px-4 py-3 text-sm cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-3",
                     option.value === value &&
                       "bg-primary/5 text-primary font-medium",
                     optionClassName,
                   )}
                   onClick={() => handleSelect(option.value)}
                 >
-                  {option.label}
+                  {option.image && (
+                    <img
+                      src={option.image}
+                      alt=""
+                      className="w-8 h-8 rounded-sm object-cover bg-gray-100"
+                    />
+                  )}
+                  <span>{option.label}</span>
                 </div>
               ))
             ) : (
@@ -171,5 +186,3 @@ const CustomSelect = ({
     </div>
   );
 };
-
-export default CustomSelect;

@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import "@/styles/globals.css";
 import { Toaster } from "sonner";
 import ClientLayout from "./ClientLayout";
+import "react-tabs/style/react-tabs.css";
 
 export const metadata: Metadata = {
   title: "IFETO E-Commerce Vendor",

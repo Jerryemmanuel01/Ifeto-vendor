@@ -26,8 +26,8 @@ type Order = {
   itemsCount: number; // number of items
   totalWeight: string; // e.g. "3.2kg"
   totalAmount: number; // ₦
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
-  row: number; // seller earnings
+  status: string;
+  earnings: number;
 };
 
 type OrderTableProps = {

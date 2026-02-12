@@ -125,3 +125,51 @@ export const EditProductSchema = Yup.object({
     .min(3, "At least 3 images are required")
     .max(5, "You can upload a maximum of 5 images"),
 });
+
+export const BusinessSchema = Yup.object().shape({
+  businessName: Yup.string()
+    .min(2, "Too short")
+    .required("Business name is required"),
+
+  contactPerson: Yup.string()
+    .min(2, "Too short")
+    .required("Contact person is required"),
+
+  emailAddress: Yup.string()
+    .email("Invalid email address")
+    .required("Email is required"),
+
+  street: Yup.string().required("Street address is required"),
+
+  city: Yup.string().required("City is required"),
+
+  state: Yup.string().required("State is required"),
+
+  country: Yup.string().required("Country is required"),
+
+  phone: Yup.string().required("Phone Number is required"),
+});
+
+export const BankPayoutSchema = Yup.object().shape({
+  bank: Yup.string().required("Bank is required"),
+  accountName: Yup.string().required("Account name is required"),
+  accountNumber: Yup.string()
+    .matches(/^\d{10}$/, "Account number must be exactly 10 digits")
+    .required("Account number is required"),
+});
+
+export const SecuritySchema = Yup.object({
+  currentPassword: Yup.string()
+    .matches(passwordRegex, passwordMessage)
+    .required("Current password is required"),
+  newPassword: Yup.string()
+    .min(8, "Password must be at least 8 characters")
+    .matches(/[A-Z]/, "Must contain at least 1 uppercase letter")
+    .matches(/[a-z]/, "Must contain at least 1 lowercase letter")
+    .matches(/[0-9]/, "Must contain at least 1 number")
+    .matches(/[@*#$%]/, "Must contain at least 1 special character (@ * # $ %)")
+    .required("New password is required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("newPassword"), undefined], "Passwords do not match")
+    .required("Confirm password is required"),
+});

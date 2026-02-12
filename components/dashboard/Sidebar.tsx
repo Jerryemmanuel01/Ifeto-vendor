@@ -92,7 +92,7 @@ const Sidebar = ({ isOpen, onClose, isLoading, userProfile }: SidebarProps) => {
     {
       name: "Settings",
       icon: Settings,
-      href: "/dashboard/settings",
+      href: "/settings",
       disabled: false, // Settings usually accessible
     },
     {

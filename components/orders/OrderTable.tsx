@@ -18,6 +18,13 @@ import eyeGreen from "@/assets/svgs/eye-green.svg";
 import Image from "next/image";
 import Link from "next/link";
 
+type OrderStatus =
+  | "pending"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
+
 type Order = {
   id: string; // Order ID
   orderNumber: string; // e.g. ORD-10234
@@ -25,8 +32,8 @@ type Order = {
   itemsCount: number; // number of items
   totalWeight: string; // e.g. "3.2kg"
   totalAmount: number; // ₦
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
-  row: number; // seller earnings
+  status: OrderStatus;
+  earnings: number;
 };
 
 type OrderTableProps = {
@@ -94,7 +101,7 @@ export default function OrderTable({ orders, isLoading }: OrderTableProps) {
       header: "Status",
       render: (row) => <span>{statusMap[row.status]}</span>,
     },
-    { header: "You Earn", accessor: "row" },
+    { header: "You Earn", accessor: "earnings" },
     {
       header: "Actions",
       render: (row) => (

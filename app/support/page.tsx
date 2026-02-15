@@ -185,8 +185,8 @@ export default function Page() {
             </div>
 
             <Link
-              href={""}
-              className="flex items-start gap-2.5 text-[#27AE60] text-[18px] leading-7 font-semibold"
+              href={"/support/FAQs"}
+              className="w-fit flex items-center gap-2.5 text-[#27AE60] text-[18px] leading-7 font-semibold"
             >
               <p>View FAQs</p>
               <MoveRight />

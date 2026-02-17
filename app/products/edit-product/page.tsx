@@ -10,6 +10,7 @@ import exportIcon from "@/assets/svgs/export.svg";
 import { useEditProduct } from "@/hooks/actions/useEditProduct";
 import { CustomSelect } from "@/components/general/CustomSelect";
 import { useRouter } from "next/navigation";
+import { formatNumberWithCommas } from "@/utils/utils";
 
 export default function Page() {
   const router = useRouter();
@@ -117,16 +118,44 @@ export default function Page() {
                   Base Cost (₦) <span className="text-[#B3261E]">*</span>
                 </label>
 
-                <Field
-                  name="baseCost"
-                  type="number"
-                  placeholder="e.g., 2500.00"
-                  className={`text-[14px] leading-5 placeholder:text-[#CFCFCF] h-12 w-full px-4 rounded-[6px] border ${
-                    formik.touched.baseCost && formik.errors.baseCost
-                      ? "border-[#B3261E]"
-                      : "border-[#CFCFCF]"
-                  }`}
-                />
+                <Field name="baseCost">
+                  {({ field }: any) => (
+                    <input
+                      {...field}
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="e.g., 2,500.00"
+                      className={`text-[14px] leading-5 placeholder:text-[#CFCFCF] h-12 w-full pl-4 pr-4 rounded-[6px] border ${
+                        formik.touched.baseCost && formik.errors.baseCost
+                          ? "border-[#B3261E]"
+                          : "border-[#CFCFCF]"
+                      }`}
+                      value={formatNumberWithCommas(field.value)}
+                      onChange={(e) => {
+                        let value = e.target.value;
+
+                        // Remove commas first
+                        value = value.replace(/,/g, "");
+
+                        // Remove non-numeric except dot
+                        value = value.replace(/[^0-9.]/g, "");
+
+                        // Allow only one decimal point
+                        const parts = value.split(".");
+                        if (parts.length > 2) {
+                          value = parts[0] + "." + parts[1];
+                        }
+
+                        // Limit to 2 decimal places
+                        if (parts[1]?.length > 2) {
+                          value = parts[0] + "." + parts[1].slice(0, 2);
+                        }
+
+                        formik.setFieldValue("baseCost", value);
+                      }}
+                    />
+                  )}
+                </Field>
 
                 <ErrorMessage
                   name="baseCost"
@@ -140,16 +169,34 @@ export default function Page() {
                   Quantity <span className="text-[#B3261E]">*</span>
                 </label>
 
-                <Field
-                  name="quantity"
-                  type="number"
-                  placeholder="e.g., 100"
-                  className={`text-[14px] leading-5 placeholder:text-[#CFCFCF] h-12 w-full px-4 rounded-[6px] border ${
-                    formik.touched.quantity && formik.errors.quantity
-                      ? "border-[#B3261E]"
-                      : "border-[#CFCFCF]"
-                  }`}
-                />
+                <Field name="quantity">
+                  {({ field }: any) => (
+                    <input
+                      {...field}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="e.g., 100"
+                      className={`text-[14px] leading-5 placeholder:text-[#CFCFCF] h-12 w-full px-4 rounded-[6px] border ${
+                        formik.touched.quantity && formik.errors.quantity
+                          ? "border-[#B3261E]"
+                          : "border-[#CFCFCF]"
+                      }`}
+                      onChange={(e) => {
+                        let value = e.target.value;
+
+                        // Remove everything except numbers
+                        value = value.replace(/[^0-9]/g, "");
+
+                        formik.setFieldValue("quantity", value);
+                      }}
+                      onBlur={(e) => {
+                        if (!e.target.value) {
+                          formik.setFieldValue("quantity", "1");
+                        }
+                      }}
+                    />
+                  )}
+                </Field>
 
                 <ErrorMessage
                   name="quantity"
@@ -165,16 +212,40 @@ export default function Page() {
                 Weight (kg) <span className="text-[#B3261E]">*</span>
               </label>
 
-              <Field
-                name="weight"
-                type="number"
-                placeholder="e.g., 1.5"
-                className={`text-[14px] leading-5 placeholder:text-[#CFCFCF] h-12 w-full px-4 rounded-[6px] border ${
-                  formik.touched.weight && formik.errors.weight
-                    ? "border-[#B3261E]"
-                    : "border-[#CFCFCF]"
-                }`}
-              />
+              <Field name="weight">
+                {({ field }: any) => (
+                  <input
+                    {...field}
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="e.g., 1.5"
+                    className={`text-[14px] leading-5 placeholder:text-[#CFCFCF] h-12 w-full px-4 rounded-[6px] border ${
+                      formik.touched.weight && formik.errors.weight
+                        ? "border-[#B3261E]"
+                        : "border-[#CFCFCF]"
+                    }`}
+                    onChange={(e) => {
+                      let value = e.target.value;
+
+                      // Remove everything except numbers and dot
+                      value = value.replace(/[^0-9.]/g, "");
+
+                      // Allow only one decimal point
+                      const parts = value.split(".");
+                      if (parts.length > 2) {
+                        value = parts[0] + "." + parts[1];
+                      }
+
+                      // Optional: limit to 2 decimal places
+                      if (parts[1]?.length > 2) {
+                        value = parts[0] + "." + parts[1].slice(0, 2);
+                      }
+
+                      formik.setFieldValue("weight", value);
+                    }}
+                  />
+                )}
+              </Field>
 
               <p className="flex items-center justify-between text-[14px] leading-5 text-[#667185]">
                 Only numerical values are allowed

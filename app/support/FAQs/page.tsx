@@ -4,6 +4,11 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
+interface FAQItemProps {
+  question: string;
+  answer: string;
+}
+
 export default function Page() {
   const FAQData = [
     {

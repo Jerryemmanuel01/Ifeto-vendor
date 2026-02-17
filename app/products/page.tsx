@@ -30,6 +30,8 @@ import Link from "next/link";
 
 import { useGetProductsQuery } from "@/lib/features/products/productsApi";
 
+import { useDebounce } from "@/hooks/useDebounce";
+
 export default function Page() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -41,9 +43,24 @@ export default function Page() {
     search: searchParams.get("q") ?? "",
   });
 
+  const [searchTerm, setSearchTerm] = useState(filters.search);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  // Update filters when debounced search term changes
+  useEffect(() => {
+    setFilters((prev) => {
+      if (prev.search === debouncedSearchTerm) return prev;
+      return { ...prev, search: debouncedSearchTerm };
+    });
+  }, [debouncedSearchTerm]);
+
+  // Pagination
+  const page = Number(searchParams.get("page")) || 1;
+  const limit = Number(searchParams.get("perPage")) || 10;
+
   const { data: productsData, isLoading } = useGetProductsQuery({
-    page: 1,
-    limit: 50,
+    page,
+    limit,
     categoryId: filters.category,
     search: filters.search,
     // Status and Sort are not explicitly supported by API swagger but requested in UI
@@ -159,19 +176,17 @@ export default function Page() {
         <form className="w-full lg:max-w-[450px] xl:max-w-[528px] flex items-center">
           <div className="relative w-full">
             <input
-              value={filters.search}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, search: e.target.value }))
-              }
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full text-sm bg-white h-10 rounded-xl px-10 border-[0.6px] border-[#EFEEEE] focus:border-[#27AE60] focus:ring-1 focus:ring-[#27AE60] transition-all outline-none"
               placeholder="Search by product name"
               maxLength={50}
             />
 
-            {filters.search && (
+            {searchTerm && (
               <button
                 type="button"
-                onClick={() => setFilters((prev) => ({ ...prev, search: "" }))}
+                onClick={() => setSearchTerm("")}
                 className="absolute top-3 right-3 text-gray-400 text-sm hover:text-gray-600"
               >
                 ✕
@@ -263,7 +278,11 @@ export default function Page() {
           </div>
         ) : (
           <div className="w-full">
-            <ProductsTable products={products} isLoading={isLoading} />
+            <ProductsTable
+              products={products}
+              isLoading={isLoading}
+              totalItems={totalProducts}
+            />
           </div>
         )}
       </div>

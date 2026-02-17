@@ -33,14 +33,16 @@ type Product = {
 type ProductsTableProps = {
   products: Product[];
   isLoading: boolean;
+  totalItems: number;
 };
 
 export default function ProductsTable({
   products,
   isLoading,
+  totalItems,
 }: ProductsTableProps) {
   const searchParams = useSearchParams();
-  const perPage = Number(searchParams.get("perPage") ?? 7);
+  const perPage = Number(searchParams.get("perPage") ?? 10);
 
   const statusMap = {
     pending: (
@@ -103,7 +105,7 @@ export default function ProductsTable({
     {
       header: "Last Updated",
       render: (row) => (
-        <span className="text-[#5A5A5A]">
+        <span className="text-[#5A5A5A] text-xs">
           {new Date(row.updatedAt).toLocaleDateString("en-GB", {
             day: "numeric",
             month: "short",
@@ -130,8 +132,13 @@ export default function ProductsTable({
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem className="flex gap-2 px-2 py-4">
-              <Image src={eye} alt="eye-icon" /> <span>View</span>
+            <DropdownMenuItem asChild>
+              <Link
+                href={`/products/${row.id}`}
+                className="flex gap-2 px-2 py-4 cursor-pointer w-full"
+              >
+                <Image src={eye} alt="eye-icon" /> <span>View</span>
+              </Link>
             </DropdownMenuItem>
 
             <DropdownMenuItem asChild>
@@ -171,7 +178,7 @@ export default function ProductsTable({
         }`}
       >
         <ItemsPerPage />
-        <Pagination totalItems={90} perPage={perPage} />
+        <Pagination totalItems={totalItems} perPage={perPage} />
       </div>
     </div>
   );

@@ -26,7 +26,9 @@ import dangerBlue from "@/assets/svgs/danger-blue.svg";
 import danger from "@/assets/svgs/danger-red.svg";
 import search from "@/assets/svgs/search-normal-light.svg";
 import TopSellingProducts from "@/components/analytics/TopSellingProducts";
-import AnalyticsTable from "@/components/analytics/AnalyticsTable";
+import AnalyticsTable, { Order } from "@/components/analytics/AnalyticsTable";
+
+// ... (other imports)
 
 export default function Page() {
   const router = useRouter();
@@ -49,7 +51,7 @@ export default function Page() {
     router.replace(`?range=${value}`, { scroll: false });
   }, [value, router]);
 
-  const orders = [
+  const orders: Order[] = [
     {
       id: "PO-1024",
       orderNumber: "ORD-1024",

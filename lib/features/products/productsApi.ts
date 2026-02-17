@@ -123,6 +123,13 @@ export const productsApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Products"],
     }),
+    deleteProduct: builder.mutation<any, string>({
+      query: (id) => ({
+        url: `/vendor/products/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Products"],
+    }),
     getCategories: builder.query<GetCategoriesResponse, void>({
       query: () => "/categories",
       // Categories likely don't change often, but we could add a tag if needed.
@@ -135,5 +142,6 @@ export const {
   useGetProductQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
+  useDeleteProductMutation,
   useGetCategoriesQuery,
 } = productsApi;

@@ -33,7 +33,7 @@ import Link from "next/link";
 import { DatePickerWithRange } from "@/components/general/DatePickerWithRange";
 import { ChevronRight } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import OrderTable from "@/components/orders/OrderTable";
+import OrderTable, { Order } from "@/components/orders/OrderTable";
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -71,7 +71,7 @@ export default function Page() {
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [filters, router]);
 
-  const orders = [
+  const orders: Order[] = [
     {
       id: "1",
       orderNumber: "ORD-1001",
@@ -81,6 +81,7 @@ export default function Page() {
       totalAmount: 4200,
       earnings: 3800,
       status: "pending",
+      // ...
     },
     {
       id: "2",

@@ -18,14 +18,14 @@ import eyeGreen from "@/assets/svgs/eye-green.svg";
 import Image from "next/image";
 import Link from "next/link";
 
-type OrderStatus =
+export type OrderStatus =
   | "pending"
   | "processing"
   | "shipped"
   | "delivered"
   | "cancelled";
 
-type Order = {
+export type Order = {
   id: string; // Order ID
   orderNumber: string; // e.g. ORD-10234
   date: string; // ISO date

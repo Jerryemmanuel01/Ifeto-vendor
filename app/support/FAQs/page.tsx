@@ -78,6 +78,11 @@ export default function Page() {
   );
 }
 
+interface FAQItemProps {
+  question: string;
+  answer: string;
+}
+
 const FAQItem = ({ question, answer }: FAQItemProps) => {
   const [isOpen, setIsOpen] = useState(false);
 

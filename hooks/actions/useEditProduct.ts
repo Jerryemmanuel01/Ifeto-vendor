@@ -1,68 +1,82 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useFormik } from "formik";
-import { AddProductSchema } from "@/utils/schema"; // Reuse schema or create new UpdateProductSchema if needed
+import { AddProductSchema } from "@/utils/schema";
 import { toast } from "sonner";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   useUpdateProductMutation,
   useGetCategoriesQuery,
   useGetProductQuery,
 } from "@/lib/features/products/productsApi";
 
-export const useEditProduct = () => {
+export const useEditProduct = (productId: string) => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const id = searchParams.get("id");
 
-  const { data: productData, isLoading: isLoadingProduct } = useGetProductQuery(
-    id as string,
-    { skip: !id },
-  );
+  // Fetch product data
+  const {
+    data: productData,
+    isLoading: isLoadingProduct,
+    error: productError,
+  } = useGetProductQuery(productId, {
+    skip: !productId,
+  });
 
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+
   const { data: categoriesData, isLoading: isLoadingCategories } =
     useGetCategoriesQuery();
 
+  // Local state
   const [isDraft, setIsDraft] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Formik setup
   const formik = useFormik({
-    enableReinitialize: true,
     initialValues: {
-      itemName: productData?.data?.name || "",
-      description: productData?.data?.description || "",
-      baseCost: productData?.data?.baseCost || "",
-      weight: productData?.data?.weight || "",
-      category: productData?.data?.categoryId || "",
-      quantity: productData?.data?.quantity || "",
-      storageInstructions: productData?.data?.storageInstructions || "",
-      // Existing images are strings, new uploads are Files. We need to handle both.
-      // For initial values, we can map existing URLs to a structure formik expects
-      images: (productData?.data?.images || []).map((url) => ({
-        url,
-        file: null, // No file object for existing images
-      })) as { file: File | null; error?: string; url?: string }[],
+      itemName: "",
+      description: "",
+      baseCost: "",
+      weight: "",
+      category: "",
+      quantity: "",
+      storageInstructions: "",
+      images: [] as { file?: File; url?: string; error?: string }[],
     },
-    validationSchema: AddProductSchema, // Reuse strictly or adapt
-    validateOnMount: true,
+    validationSchema: AddProductSchema, // Reusing add product schema
+    enableReinitialize: true, // Important for populating data after fetch
+    validateOnMount: false, // Don't validate immediately on mount to avoid red fields while loading
     onSubmit: async (values) => {
-      if (!id) return;
-
       try {
         setIsUploading(true);
 
-        // Separate existing images from new ones
-        const existingImageUrls = values.images
-          .filter((img) => img.url && !img.file)
-          .map((img) => img.url as string);
+        const currentImages = values.images;
 
-        const newImages = values.images.filter((img) => img.file && !img.error);
-        const newImageUrls: string[] = [];
+        // Validation check
+        const validImages = currentImages.filter(
+          (img) => !img.error && (img.file || img.url),
+        );
+
+        if (validImages.length === 0) {
+          toast.error("Please ensure at least one valid image is present");
+          setIsUploading(false);
+          return;
+        }
+
+        const finalImageUrls: string[] = [];
+        const newImagesToUpload = validImages.filter((img) => img.file);
+        const existingImages = validImages.filter(
+          (img) => !img.file && img.url,
+        );
+
+        // Keep existing URLs
+        existingImages.forEach((img) => {
+          if (img.url) finalImageUrls.push(img.url);
+        });
 
         // Upload new images
-        for (const imgWrapper of newImages) {
+        for (const imgWrapper of newImagesToUpload) {
           if (!imgWrapper.file) continue;
 
           const formData = new FormData();
@@ -87,17 +101,10 @@ export const useEditProduct = () => {
           }
 
           const data = await response.json();
-          newImageUrls.push(data.secure_url);
+          finalImageUrls.push(data.secure_url);
         }
 
-        const finalImages = [...existingImageUrls, ...newImageUrls];
-
-        if (finalImages.length === 0) {
-          toast.error("Please ensure at least one valid image is present");
-          setIsUploading(false);
-          return;
-        }
-
+        // Construct payload
         const payload = {
           name: values.itemName,
           description: values.description,
@@ -105,14 +112,23 @@ export const useEditProduct = () => {
           weight: Number(values.weight),
           quantity: Number(values.quantity || 1),
           categoryId: values.category,
-          images: finalImages,
+          images: finalImageUrls,
           storageInstructions: values.storageInstructions,
           status: isDraft ? "DRAFT" : "PUBLISHED",
         };
 
-        await updateProduct({ id, body: payload as any }).unwrap();
+        if (!productId) {
+          throw new Error("Product ID is missing");
+        }
 
-        toast.success("Product updated successfully");
+        await updateProduct({
+          id: productId,
+          body: payload as any, // Casting because Partial<CreateProductRequest> might be strict
+        }).unwrap();
+
+        toast.success(
+          isDraft ? "Product updated as draft" : "Product updated successfully",
+        );
         router.push("/products");
       } catch (error: any) {
         toast.error(error?.data?.message || "Failed to update product");
@@ -122,6 +138,26 @@ export const useEditProduct = () => {
       }
     },
   });
+
+  // Populate form when data is fetched
+  useEffect(() => {
+    if (productData?.data) {
+      const product = productData.data;
+      formik.setValues({
+        itemName: product.name || "",
+        description: product.description || "",
+        baseCost: product.baseCost?.toString() || "",
+        weight: product.weight?.toString() || "",
+        category: product.categoryId || "",
+        quantity: product.quantity?.toString() || "",
+        storageInstructions: product.storageInstructions || "",
+        images: product.images?.map((url) => ({ url })) || [],
+      });
+      // Set draft status based on current product status if needed,
+      // but usually editing implies we might change status on save.
+      // Current logic relies on which button is clicked (Review vs Draft).
+    }
+  }, [productData]);
 
   const validateImage = async (file: File): Promise<string | undefined> => {
     if (
@@ -192,6 +228,7 @@ export const useEditProduct = () => {
     removeImage,
     handleSubmitDraft,
     handleSubmitReview,
-    isProductLoaded: !!productData,
+    productData: productData?.data, // Expose if helpful for UI
+    isFetching: isLoadingProduct,
   };
 };

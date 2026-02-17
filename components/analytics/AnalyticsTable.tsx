@@ -19,14 +19,15 @@ import Link from "next/link";
 import { useState } from "react";
 import PayoutDrawer from "./PayoutDrawer";
 
-type OrderStatus =
+export type OrderStatus =
   | "pending"
   | "processing"
   | "shipped"
   | "delivered"
-  | "cancelled";
+  | "cancelled"
+  | "paid";
 
-type Order = {
+export type Order = {
   id: string; // Order ID
   orderNumber: string; // e.g. ORD-10234
   date: string; // ISO date
@@ -80,6 +81,12 @@ export default function AnalyticsTable({
     cancelled: (
       <span className="px-4 py-1 text-[14px] font-medium capitalize rounded-full bg-[#E53E3E1A] text-[#E53E3E]">
         Cancelled
+      </span>
+    ),
+
+    delivered: (
+      <span className="px-4 py-1 text-[14px] font-medium capitalize rounded-full bg-[#27AE601A] text-[#27AE60]">
+        Delivered
       </span>
     ),
   };

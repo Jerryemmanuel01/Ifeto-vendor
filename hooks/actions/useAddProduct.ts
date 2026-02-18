@@ -25,7 +25,7 @@ export const useAddProduct = () => {
       baseCost: "",
       weight: "",
       category: "", // This will store the category ID
-      quantity: "",
+      quantity: "1",
       storageInstructions: "",
       images: [] as { file: File; error?: string; url?: string }[],
     },

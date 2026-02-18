@@ -13,6 +13,7 @@ import Table, { Column } from "../Table/Table";
 import moreIcon from "@/assets/svgs/more.svg";
 import rightIcon from "@/assets/svgs/right-icon.svg";
 import repeat from "@/assets/svgs/repeat.svg";
+
 import eyeGreen from "@/assets/svgs/eye-green.svg";
 import Image from "next/image";
 import Link from "next/link";

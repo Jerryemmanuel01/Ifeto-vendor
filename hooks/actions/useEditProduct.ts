@@ -28,6 +28,8 @@ export const useEditProduct = () => {
   const [isDraft, setIsDraft] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
+  console.log(productData);
+
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {

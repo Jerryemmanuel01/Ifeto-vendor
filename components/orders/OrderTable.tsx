@@ -23,7 +23,11 @@ export type OrderStatus =
   | "processing"
   | "shipped"
   | "delivered"
-  | "cancelled";
+  | "cancelled"
+  | "accepted"
+  | "rejected"
+  | "ready_for_pickup"
+  | "completed";
 
 export type Order = {
   id: string; // Order ID
@@ -39,9 +43,14 @@ export type Order = {
 type OrderTableProps = {
   orders: Order[];
   isLoading: boolean;
+  totalItems: number;
 };
 
-export default function OrderTable({ orders, isLoading }: OrderTableProps) {
+export default function OrderTable({
+  orders,
+  isLoading,
+  totalItems,
+}: OrderTableProps) {
   const searchParams = useSearchParams();
   const perPage = Number(searchParams.get("perPage") ?? 7);
 
@@ -73,6 +82,30 @@ export default function OrderTable({ orders, isLoading }: OrderTableProps) {
     cancelled: (
       <span className="px-4 py-1 text-[14px] font-medium capitalize rounded-full bg-[#E53E3E1A] text-[#E53E3E]">
         Cancelled
+      </span>
+    ),
+
+    accepted: (
+      <span className="px-4 py-1 text-[14px] font-medium capitalize rounded-full bg-[#E3FFEF] text-[#27AE60]">
+        Accepted
+      </span>
+    ),
+
+    rejected: (
+      <span className="px-4 py-1 text-[14px] font-medium capitalize rounded-full bg-[#E53E3E1A] text-[#E53E3E]">
+        Rejected
+      </span>
+    ),
+
+    ready_for_pickup: (
+      <span className="px-4 py-1 text-[14px] font-medium capitalize rounded-full bg-[#F3E8FF] text-[#9333EA]">
+        Ready for Pickup
+      </span>
+    ),
+
+    completed: (
+      <span className="px-4 py-1 text-[14px] font-medium capitalize rounded-full bg-[#34C7591A] text-[#34C759]">
+        Completed
       </span>
     ),
   };
@@ -135,7 +168,7 @@ export default function OrderTable({ orders, isLoading }: OrderTableProps) {
         }`}
       >
         <ItemsPerPage />
-        <Pagination totalItems={90} perPage={perPage} />
+        <Pagination totalItems={totalItems} perPage={perPage} />
       </div>
     </div>
   );

@@ -28,7 +28,10 @@ import {
 import ProductsTable from "@/components/products/ProductsTable";
 import Link from "next/link";
 
-import { useGetProductsQuery } from "@/lib/features/products/productsApi";
+import {
+  useGetProductsQuery,
+  useGetCategoriesQuery,
+} from "@/lib/features/products/productsApi";
 
 import { useDebounce } from "@/hooks/useDebounce";
 
@@ -36,74 +39,80 @@ export default function Page() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [filters, setFilters] = useState({
-    status: searchParams.get("status") ?? "all",
-    category: searchParams.get("category") ?? "all",
-    sortBy: searchParams.get("sort") ?? "recent",
-    search: searchParams.get("q") ?? "",
-  });
-
-  const [searchTerm, setSearchTerm] = useState(filters.search);
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
-
-  // Update filters when debounced search term changes
-  useEffect(() => {
-    setFilters((prev) => {
-      if (prev.search === debouncedSearchTerm) return prev;
-      return { ...prev, search: debouncedSearchTerm };
-    });
-  }, [debouncedSearchTerm]);
-
-  // Pagination
+  const status = searchParams.get("status") ?? "all";
+  const categoryId = searchParams.get("category") ?? "all";
+  const sortBy = searchParams.get("sortBy") ?? "createdAt";
+  const sortOrder = (searchParams.get("sortOrder") as "asc" | "desc") ?? "desc";
   const page = Number(searchParams.get("page")) || 1;
   const limit = Number(searchParams.get("perPage")) || 10;
+  const q = searchParams.get("q") ?? "";
 
-  const { data: productsData, isLoading } = useGetProductsQuery({
+  const [searchTerm, setSearchTerm] = useState(q);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const updateUrl = (updates: Record<string, string | number | undefined>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === undefined || value === "all" || value === "") {
+        params.delete(key);
+      } else {
+        params.set(key, value.toString());
+      }
+    });
+    // Reset to page 1 on filter change unless specifically setting page
+    if (!updates.page) {
+      params.set("page", "1");
+    }
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
+
+  // Update URL when debounced search term changes
+  useEffect(() => {
+    if (debouncedSearchTerm !== q) {
+      updateUrl({ q: debouncedSearchTerm });
+    }
+  }, [debouncedSearchTerm, q]);
+
+  const { data: categoriesData } = useGetCategoriesQuery();
+  const categories = categoriesData?.data || [];
+
+  const {
+    data: productsData,
+    isLoading,
+    isFetching,
+  } = useGetProductsQuery({
     page,
     limit,
-    categoryId: filters.category,
-    search: filters.search,
-    // Status and Sort are not explicitly supported by API swagger but requested in UI
-    // status: filters.status,
-    // sort: filters.sortBy
+    categoryId,
+    search: q,
+    approvalStatus:
+      status === "all" ? undefined : (status.toUpperCase() as any),
+    sortBy: sortBy as any,
+    sortOrder,
   });
-
-  useEffect(() => {
-    const params = new URLSearchParams();
-
-    if (filters.status !== "all") params.set("status", filters.status);
-    if (filters.category !== "all") params.set("category", filters.category);
-    if (filters.sortBy !== "recent") params.set("sort", filters.sortBy);
-    if (filters.search) params.set("q", filters.search);
-
-    router.replace(`?${params.toString()}`, { scroll: false });
-  }, [filters, router]);
 
   // Transform API data to match UI component structure
   const products =
     productsData?.data?.data?.map((item) => {
       let status: "pending" | "approved" | "rejected" | "draft" = "pending";
 
-      if (item.status === "DRAFT") {
-        status = "draft";
-      } else if (item.status === "PUBLISHED") {
-        if (item.approvalStatus === "APPROVED") status = "approved";
-        else if (item.approvalStatus === "REJECTED") status = "rejected";
-        else status = "pending";
-      }
+      if (item.approvalStatus === "DRAFT") status = "draft";
+      else if (item.approvalStatus === "APPROVED") status = "approved";
+      else if (item.approvalStatus === "REJECTED") status = "rejected";
+      else status = "pending";
 
       return {
         id: item.id,
         product: {
           name: item.name,
-          image: item.images?.[0] || "/images/placeholder.png", // Fallback image
+          image: item.images?.[0] || "/images/placeholder.png",
         },
         category: item.category?.name || "Uncategorized",
         weight: item.weight ? `${item.weight}kg` : "N/A",
-        price: item.sellingPrice,
+        price: item.price,
         stock: item.quantity,
         status,
-        updatedAt: item.updatedAt,
+        updatedAt: item.updatedAt || item.createdAt,
       };
     }) || [];
 
@@ -204,10 +213,8 @@ export default function Page() {
         <div className="w-full lg:w-auto">
           <div className="grid grid-cols-3 gap-2 w-full">
             <Select
-              value={filters.status}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, status: value }))
-              }
+              value={status}
+              onValueChange={(value) => updateUrl({ status: value })}
             >
               <SelectTrigger className="h-10 px-2 md:px-4 text-xs md:text-sm font-semibold w-full bg-white">
                 <SelectValue placeholder="Status" />
@@ -219,15 +226,14 @@ export default function Page() {
                   <SelectItem value="approved">Approved</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
 
             <Select
-              value={filters.category}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, category: value }))
-              }
+              value={categoryId}
+              onValueChange={(value) => updateUrl({ category: value })}
             >
               <SelectTrigger className="h-10 px-2 md:px-4 text-xs md:text-sm font-semibold w-full bg-white">
                 <SelectValue placeholder="Category" />
@@ -236,18 +242,21 @@ export default function Page() {
               <SelectContent>
                 <SelectGroup>
                   <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="electronics">Electronics</SelectItem>
-                  <SelectItem value="fashion">Fashion</SelectItem>
-                  <SelectItem value="food">Food</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
 
             <Select
-              value={filters.sortBy}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, sortBy: value }))
-              }
+              value={`${sortBy}-${sortOrder}`}
+              onValueChange={(value) => {
+                const [newSortBy, newSortOrder] = value.split("-");
+                updateUrl({ sortBy: newSortBy, sortOrder: newSortOrder });
+              }}
             >
               <SelectTrigger className="h-10 px-2 md:px-4 text-xs md:text-sm font-semibold w-full bg-white">
                 <SelectValue placeholder="Sort" />
@@ -255,9 +264,15 @@ export default function Page() {
 
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value="recent">Recently Updated</SelectItem>
-                  <SelectItem value="oldest">Oldest</SelectItem>
-                  <SelectItem value="name-asc">Name (A–Z)</SelectItem>
+                  <SelectItem value="createdAt-desc">Newest</SelectItem>
+                  <SelectItem value="createdAt-asc">Oldest</SelectItem>
+                  <SelectItem value="price-asc">Price (Low to High)</SelectItem>
+                  <SelectItem value="price-desc">
+                    Price (High to Low)
+                  </SelectItem>
+                  <SelectItem value="quantity-desc">
+                    Stock (High to Low)
+                  </SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -280,7 +295,7 @@ export default function Page() {
           <div className="w-full">
             <ProductsTable
               products={products}
-              isLoading={isLoading}
+              isLoading={isLoading || isFetching}
               totalItems={totalProducts}
             />
           </div>

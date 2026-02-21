@@ -76,7 +76,7 @@ export const BusinessInfoSchema = Yup.object({
 
 export const AccountDetailsSchema = Yup.object({
   accountName: Yup.string().required("Account Name is required"),
-  bank: Yup.string().required("Bank is required"),
+  bankName: Yup.string().required("Bank is required"),
   accountNumber: Yup.string()
     .required("Account Number is required")
     .min(5, "Account Number must be at least 5 characters"),
@@ -151,7 +151,7 @@ export const BusinessSchema = Yup.object().shape({
 });
 
 export const BankPayoutSchema = Yup.object().shape({
-  bank: Yup.string().required("Bank is required"),
+  bankName: Yup.string().required("Bank is required"),
   accountName: Yup.string().required("Account name is required"),
   accountNumber: Yup.string()
     .matches(/^\d{10}$/, "Account number must be exactly 10 digits")
@@ -159,7 +159,7 @@ export const BankPayoutSchema = Yup.object().shape({
 });
 
 export const SecuritySchema = Yup.object({
-  currentPassword: Yup.string()
+  oldPassword: Yup.string()
     .matches(passwordRegex, passwordMessage)
     .required("Current password is required"),
   newPassword: Yup.string()
@@ -167,7 +167,7 @@ export const SecuritySchema = Yup.object({
     .matches(/[A-Z]/, "Must contain at least 1 uppercase letter")
     .matches(/[a-z]/, "Must contain at least 1 lowercase letter")
     .matches(/[0-9]/, "Must contain at least 1 number")
-    .matches(/[@*#$%]/, "Must contain at least 1 special character (@ * # $ %)")
+    .matches(/[@*#$%!]/, "Must contain at least 1 special character (@ * # $ % !)")
     .required("New password is required"),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("newPassword"), undefined], "Passwords do not match")

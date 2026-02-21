@@ -1,6 +1,9 @@
 export default function SkeletonRow({ columns }: { columns: number }) {
   return (
-    <div className="grid grid-cols-4 px-6 py-5 gap-4">
+    <div
+      className="grid px-6 py-5"
+      style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
+    >
       {Array.from({ length: columns }).map((_, i) => (
         <div
           key={i}

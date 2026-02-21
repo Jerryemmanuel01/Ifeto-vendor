@@ -232,10 +232,10 @@ export default function Page() {
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
+                  <SelectItem value="PENDING">Pending</SelectItem>
+                  <SelectItem value="PROCESSING">Processing</SelectItem>
                   <SelectItem value="ACCEPTED">Accepted</SelectItem>
-                  <SelectItem value="READY_FOR_PICKUP">
-                    Ready for Pickup
-                  </SelectItem>
+                  <SelectItem value="READY">Ready for Pickup</SelectItem>
                   <SelectItem value="COMPLETED">Completed</SelectItem>
                   <SelectItem value="REJECTED">Rejected</SelectItem>
                 </SelectGroup>

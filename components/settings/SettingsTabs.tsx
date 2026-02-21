@@ -20,11 +20,11 @@ import PayoutHistory from "./PayoutHistory";
 import Notifications from "./Notifications";
 
 const settingsTabs = [
-  {
-    label: "Business Details",
-    icon: HiOutlineBuildingOffice2,
-    value: "business",
-  },
+  // {
+  //   label: "Business Details",
+  //   icon: HiOutlineBuildingOffice2,
+  //   value: "business",
+  // },
   {
     label: "Bank & Payout",
     icon: HiOutlineCreditCard,
@@ -40,11 +40,11 @@ const settingsTabs = [
     icon: HiOutlineBanknotes,
     value: "payout",
   },
-  {
-    label: "Notifications",
-    icon: HiOutlineBell,
-    value: "notifications",
-  },
+  // {
+  //   label: "Notifications",
+  //   icon: HiOutlineBell,
+  //   value: "notifications",
+  // },
 ];
 
 export default function SettingsTabs() {
@@ -163,9 +163,9 @@ export default function SettingsTabs() {
 
       {/* CONTENT */}
       <div className="md:mt-6 mt-4">
-        <TabPanel>
+        {/* <TabPanel>
           <BusinessDetails />
-        </TabPanel>
+        </TabPanel> */}
 
         <TabPanel>
           <BankPayoutDetails />
@@ -179,9 +179,9 @@ export default function SettingsTabs() {
           <PayoutHistory />
         </TabPanel>
 
-        <TabPanel>
+        {/* <TabPanel>
           <Notifications />
-        </TabPanel>
+        </TabPanel> */}
       </div>
     </Tabs>
   );

@@ -14,19 +14,13 @@ export const useAccountDetails = () => {
   const formik = useFormik({
     initialValues: {
       accountName: "",
-      bank: "",
+      bankName: "",
       accountNumber: "",
     },
     validationSchema: AccountDetailsSchema,
     onSubmit: async (values) => {
       try {
-        const payload = {
-          accountName: values.accountName,
-          bankName: values.bank,
-          accountNumber: values.accountNumber,
-        };
-
-        await updateAccountDetails(payload).unwrap();
+        await updateAccountDetails(values).unwrap();
         showSuccessToast("Account details updated successfully!");
         refetch();
         router.push("/dashboard");

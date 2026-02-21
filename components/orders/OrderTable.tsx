@@ -26,6 +26,7 @@ export type OrderStatus =
   | "cancelled"
   | "accepted"
   | "rejected"
+  | "ready"
   | "ready_for_pickup"
   | "completed";
 
@@ -94,6 +95,12 @@ export default function OrderTable({
     rejected: (
       <span className="px-4 py-1 text-[14px] font-medium capitalize rounded-full bg-[#E53E3E1A] text-[#E53E3E]">
         Rejected
+      </span>
+    ),
+
+    ready: (
+      <span className="px-4 py-1 text-[14px] font-medium capitalize rounded-full bg-[#F3E8FF] text-[#9333EA]">
+        Ready
       </span>
     ),
 

@@ -24,27 +24,27 @@ import { toast } from "sonner";
 import ConfirmationModal from "@/components/general/ConfirmationModal";
 
 // SIMULATION MOCK DATA (Commented out for real implementation)
-const product = {
-  id: "mock-id-123",
-  name: "Premium Nigerian Red Palm Oil (5 Liters)",
-  category: { name: "Food & Beverages", id: "cat-1" },
-  sellingPrice: 25000,
-  baseCost: 20000,
-  quantity: 50,
-  weight: 5,
-  description:
-    "Authentic, unrefined red palm oil sourced directly from sustainable farms in Eastern Nigeria. Rich in Vitamin A and E, perfect for traditional soups and stews. No additives or preservatives.",
-  images: [
-    "https://plus.unsplash.com/premium_photo-1663852297267-827c73e7529e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "https://images.unsplash.com/photo-1761839259494-71caddcdd6b3?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwxfHx8ZW58MHx8fHx8",
-  ],
-  status: "PUBLISHED",
-  approvalStatus: "APPROVED",
-  storageInstructions:
-    "Store in a cool, dark place away from direct sunlight. Do not refrigerate.",
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-};
+// const product = {
+//   id: "mock-id-123",
+//   name: "Premium Nigerian Red Palm Oil (5 Liters)",
+//   category: { name: "Food & Beverages", id: "cat-1" },
+//   sellingPrice: 25000,
+//   baseCost: 20000,
+//   quantity: 50,
+//   weight: 5,
+//   description:
+//     "Authentic, unrefined red palm oil sourced directly from sustainable farms in Eastern Nigeria. Rich in Vitamin A and E, perfect for traditional soups and stews. No additives or preservatives.",
+//   images: [
+//     "https://plus.unsplash.com/premium_photo-1663852297267-827c73e7529e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+//     "https://images.unsplash.com/photo-1761839259494-71caddcdd6b3?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwxfHx8ZW58MHx8fHx8",
+//   ],
+//   status: "PUBLISHED",
+//   approvalStatus: "APPROVED",
+//   storageInstructions:
+//     "Store in a cool, dark place away from direct sunlight. Do not refrigerate.",
+//   createdAt: new Date().toISOString(),
+//   updatedAt: new Date().toISOString(),
+// };
 
 export default function ProductDetailsPage() {
   const params = useParams();
@@ -54,17 +54,15 @@ export default function ProductDetailsPage() {
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  // const {
-  //   data: productData,
-  //   isLoading,
-  //   error,
-  // } = useGetProductQuery(id, {
-  //   skip: !id,
-  // });
-  // const product = productData?.data;
+  const {
+    data: productData,
+    isLoading,
+    error,
+  } = useGetProductQuery(id, {
+    skip: !id,
+  });
+  const product = productData?.data;
 
-  const isLoading = false;
-  const error = null;
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Set initial selected image when data loads
@@ -253,9 +251,11 @@ export default function ProductDetailsPage() {
               Selling Price
             </span>
             <span className="text-3xl font-bold text-[#27AE60]">
-              ₦
-              {product.sellingPrice?.toLocaleString() ??
-                product.baseCost?.toLocaleString()}
+              {product.price
+                ? product.price
+                : product.baseCost
+                  ? `₦${product.baseCost.toLocaleString()}`
+                  : "N/A"}
             </span>
             {product.baseCost && (
               <span className="text-sm text-[#787878]">
@@ -312,18 +312,23 @@ export default function ProductDetailsPage() {
           )}
 
           <div className="pt-6 border-t border-[#EFEEEE] flex flex-wrap gap-6 text-xs text-[#9CA3AF]">
-            <div className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>
-                Created: {new Date(product.createdAt).toLocaleDateString()}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>
-                Last Updated: {new Date(product.updatedAt).toLocaleDateString()}
-              </span>
-            </div>
+            {product.createdAt && (
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5" />
+                <span>
+                  Created: {new Date(product.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+            )}
+            {product.updatedAt && (
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5" />
+                <span>
+                  Last Updated:{" "}
+                  {new Date(product.updatedAt).toLocaleDateString()}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>

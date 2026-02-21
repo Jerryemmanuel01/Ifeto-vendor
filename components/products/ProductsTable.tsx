@@ -24,10 +24,10 @@ type Product = {
   };
   category: string;
   weight?: string;
-  price: number;
+  price: number | string;
   stock: number;
   status: "pending" | "approved" | "rejected" | "draft";
-  updatedAt: string;
+  updatedAt?: string;
 };
 
 type ProductsTableProps = {
@@ -88,9 +88,13 @@ export default function ProductsTable({
     { header: "Weight", accessor: "weight" },
     {
       header: "Price",
-      render: (row) => (
-        <p className="font-semibold text-[#2A2A2A]">{`₦${row.price?.toLocaleString()}`}</p>
-      ),
+      render: (row) => {
+        const priceDisplay =
+          typeof row.price === "number"
+            ? `₦${row.price.toLocaleString()}`
+            : row.price;
+        return <p className="font-semibold text-[#2A2A2A]">{priceDisplay}</p>;
+      },
     },
     { header: "Stock", accessor: "stock" },
     {
@@ -102,25 +106,29 @@ export default function ProductsTable({
         </div>
       ),
     },
-    {
-      header: "Last Updated",
-      render: (row) => (
-        <span className="text-[#5A5A5A] text-xs">
-          {new Date(row.updatedAt).toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })}{" "}
-          <span className="text-[#737c87] text-[10px]">
-            {new Date(row.updatedAt).toLocaleTimeString("en-US", {
-              hour: "numeric",
-              minute: "numeric",
-              hour12: true,
-            })}
-          </span>
-        </span>
-      ),
-    },
+    // {
+    //   header: "Last Updated",
+    //   render: (row) => {
+    //     if (!row.updatedAt)
+    //       return <span className="text-[#5A5A5A] text-xs">-</span>;
+    //     return (
+    //       <span className="text-[#5A5A5A] text-xs">
+    //         {new Date(row.updatedAt).toLocaleDateString("en-GB", {
+    //           day: "numeric",
+    //           month: "short",
+    //           year: "numeric",
+    //         })}{" "}
+    //         <span className="text-[#737c87] text-[10px]">
+    //           {new Date(row.updatedAt).toLocaleTimeString("en-US", {
+    //             hour: "numeric",
+    //             minute: "numeric",
+    //             hour12: true,
+    //           })}
+    //         </span>
+    //       </span>
+    //     );
+    //   },
+    // },
     {
       header: "Actions",
       render: (row) => (
@@ -150,9 +158,13 @@ export default function ProductsTable({
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuItem className="flex gap-2 px-2 py-4">
-              <Image src={repeat} alt="repeat-icon" /> <span>Resubmit</span>
-            </DropdownMenuItem>
+            {row.status === "rejected" && (
+              <DropdownMenuItem asChild className="flex gap-2 px-2 py-4">
+                <Link href={`/products/edit-product?id=${row.id}`}>
+                  <Image src={repeat} alt="repeat-icon" /> <span>Resubmit</span>
+                </Link>
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       ),

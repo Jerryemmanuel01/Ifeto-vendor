@@ -45,21 +45,21 @@ const AccountDetailsForm = () => {
           {/* Bank Selection */}
           <div>
             <label
-              htmlFor="bank"
+              htmlFor="bankName"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
               Bank Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              id="bank"
-              {...formik.getFieldProps("bank")}
+              id="bankName"
+              {...formik.getFieldProps("bankName")}
               placeholder="Enter your bank name"
               className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-gray-400 text-sm"
             />
-            {formik.touched.bank && formik.errors.bank && (
+            {formik.touched.bankName && formik.errors.bankName && (
               <div className="text-red-500 text-xs mt-1">
-                {formik.errors.bank}
+                {formik.errors.bankName}
               </div>
             )}
           </div>

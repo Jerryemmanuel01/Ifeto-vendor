@@ -21,20 +21,22 @@ export interface Product {
   description: string;
   baseCost: number;
   weight: number;
-  quantity: number;
+  categoryId: string;
   images: string[];
   storageInstructions: string;
-  status: string; // "PUBLISHED" | "DRAFT"
-  approvalStatus: string; // "PENDING" | "APPROVED" | "REJECTED"
-  rejectionReason: string | null;
+  status: string; // "PUBLISHED"
+  quantity: number;
+  approvalStatus: string; // "DRAFT" | "PENDING" | "APPROVED" | "REJECTED"
   approvedAt: string | null;
   approvedBy: string | null;
-  vendorId: string;
-  categoryId: string;
-  sellingPrice: number;
-  category: Category;
-  createdAt: string;
-  updatedAt: string;
+  rejectionReason: string | null;
+  category: {
+    id: string;
+    name: string;
+  };
+  price: string; // "₦1900.00"
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ProductsResponse {
@@ -56,7 +58,10 @@ export interface GetProductsParams {
   limit?: number;
   categoryId?: string;
   search?: string;
-  status?: string; // Adding this just in case filtering is supported but doc omitted it for brevity
+  approvalStatus?: "DRAFT" | "PENDING" | "APPROVED" | "REJECTED";
+  status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  sortBy?: "price" | "quantity" | "createdAt" | "updatedAt";
+  sortOrder?: "asc" | "desc";
 }
 
 export interface CreateProductRequest {
@@ -98,6 +103,15 @@ export const productsApi = apiSlice.injectEndpoints({
         if (params?.categoryId && params.categoryId !== "all")
           queryParams.append("categoryId", params.categoryId);
         if (params?.search) queryParams.append("search", params.search);
+        if (
+          params?.approvalStatus &&
+          (params.approvalStatus as string) !== "all"
+        )
+          queryParams.append("approvalStatus", params.approvalStatus);
+        if (params?.status) queryParams.append("status", params.status);
+        if (params?.sortBy) queryParams.append("sortBy", params.sortBy);
+        if (params?.sortOrder)
+          queryParams.append("sortOrder", params.sortOrder);
 
         return `/vendor/products?${queryParams.toString()}`;
       },

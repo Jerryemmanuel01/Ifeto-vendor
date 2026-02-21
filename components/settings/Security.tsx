@@ -14,23 +14,37 @@ import {
 } from "@/components/ui/select";
 import Image from "next/image";
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useUpdatePasswordMutation } from "@/lib/features/profile/profileApi";
+import { toast } from "sonner";
 
 export default function Security() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [updatePassword, { isLoading }] = useUpdatePasswordMutation();
+
   const formik = useFormik({
     initialValues: {
-      currentPassword: "",
+      oldPassword: "",
       newPassword: "",
       confirmPassword: "",
     },
     validationSchema: SecuritySchema,
     validateOnMount: false,
-    onSubmit: async (values) => {
-      console.log(values);
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        await updatePassword({
+          currentPassword: values.oldPassword,
+          newPassword: values.newPassword,
+          confirmPassword: values.confirmPassword,
+        }).unwrap();
+        toast.success("Password changed successfully");
+        resetForm();
+      } catch (error: any) {
+        toast.error(error?.data?.message || "Failed to change password");
+      }
     },
   });
 
@@ -48,22 +62,19 @@ export default function Security() {
       <FormikProvider value={formik}>
         <Form className="space-y-4" onSubmit={formik.handleSubmit}>
           <div className="">
-            <label
-              className="block font-medium text-sm"
-              htmlFor="currentPassword"
-            >
+            <label className="block font-medium text-sm" htmlFor="oldPassword">
               Current Password
             </label>
             <div className="w-full border border-light-active rounded-md flex items-center">
               <input
                 type={showCurrentPassword ? "text" : "password"}
-                name="currentPassword"
-                id="currentPassword"
+                name="oldPassword"
+                id="oldPassword"
                 placeholder="Enter your current password"
                 className="w-full outline-none border-none h-14 px-4 text-sm placeholder:text-light-aborder-light-active"
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
-                value={formik.values.currentPassword}
+                value={formik.values.oldPassword}
               />
               {showCurrentPassword ? (
                 <button
@@ -87,12 +98,11 @@ export default function Security() {
                 </button>
               )}
             </div>
-            {formik.touched.currentPassword &&
-              formik.errors.currentPassword && (
-                <div className="text-red-600 text-xs mt-1">
-                  {formik.errors.currentPassword}
-                </div>
-              )}
+            {formik.touched.oldPassword && formik.errors.oldPassword && (
+              <div className="text-red-600 text-xs mt-1">
+                {formik.errors.oldPassword}
+              </div>
+            )}
           </div>
           <div className="mt-4">
             <label className="block font-medium text-sm" htmlFor="newPassword">
@@ -179,9 +189,14 @@ export default function Security() {
           <div className="flex flex-col md:flex-row items-center gap-4 py-0 md:py-6">
             <button
               type="submit"
-              className="px-5 h-12 bg-[#27AE60] rounded-[6px] text-[18px] leading-8 text-white font-semiboldw w-full cursor-pointer"
+              disabled={isLoading || !formik.isValid}
+              className="px-5 h-12 bg-[#27AE60] rounded-[6px] text-[18px] leading-8 text-white font-semibold flex items-center justify-center w-full cursor-pointer disabled:opacity-50"
             >
-              Save Changes
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                "Save Changes"
+              )}
             </button>
 
             <button className="px-5 h-12 border border-[#27AE60] rounded-[6px] text-[18px] leading-8 text-[#27AE60] font-semiboldw w-full cursor-pointer">

@@ -12,7 +12,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 export function ItemsPerPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const perPage = searchParams.get("perPage") ?? "7";
+  const perPage = searchParams.get("perPage") ?? "10";
 
   const update = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());

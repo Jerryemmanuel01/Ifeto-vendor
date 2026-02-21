@@ -10,19 +10,48 @@ import {
 } from "@/components/ui/select";
 import Image from "next/image";
 
+import {
+  useGetProfileQuery,
+  useUpdateBankDetailsMutation,
+} from "@/lib/features/profile/profileApi";
+import { useEffect } from "react";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+
 export default function BankPayoutDetails() {
+  const { data: profileData } = useGetProfileQuery();
+  const [updateBankDetails, { isLoading }] = useUpdateBankDetailsMutation();
+
   const formik = useFormik({
     initialValues: {
       accountName: "",
-      bank: "",
+      bankName: "",
       accountNumber: "",
     },
     validationSchema: BankPayoutSchema,
     validateOnMount: false,
-    onSubmit: async (values) => {
-      console.log(values);
+    enableReinitialize: true,
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        await updateBankDetails(values).unwrap();
+        toast.success("Bank details updated successfully");
+        resetForm();
+      } catch (error: any) {
+        toast.error(error?.data?.message || "Failed to update bank details");
+      }
     },
   });
+
+  useEffect(() => {
+    if (profileData?.data) {
+      const { accountName, bankName, accountNumber } = profileData.data;
+      formik.setValues({
+        accountName: accountName || "",
+        bankName: bankName || "",
+        accountNumber: accountNumber || "",
+      });
+    }
+  }, [profileData]);
 
   const nigerianBanks = [
     "Access Bank",
@@ -90,10 +119,10 @@ export default function BankPayoutDetails() {
             </label>
 
             <Select
-              value={formik.values.bank}
+              value={formik.values.bankName}
               onValueChange={(value) => {
-                formik.setFieldValue("bank", value);
-                formik.setFieldTouched("bank", true);
+                formik.setFieldValue("bankName", value);
+                formik.setFieldTouched("bankName", true, false);
               }}
             >
               <SelectTrigger
@@ -109,7 +138,7 @@ export default function BankPayoutDetails() {
     flex items-center
     focus:ring-0 focus:outline-none
     ${
-      formik.touched.bank && formik.errors.bank
+      formik.touched.bankName && formik.errors.bankName
         ? "border-[#B3261E]"
         : "border-[#CFCFCF]"
     }
@@ -135,7 +164,7 @@ export default function BankPayoutDetails() {
             </Select>
 
             <ErrorMessage
-              name="bank"
+              name="bankName"
               component="p"
               className="text-[12px] text-[#B3261E]"
             />
@@ -183,9 +212,14 @@ export default function BankPayoutDetails() {
           <div className="flex flex-col md:flex-row items-center gap-4 py-0 md:py-6">
             <button
               type="submit"
-              className="px-5 h-12 bg-[#27AE60] rounded-[6px] text-[18px] leading-8 text-white font-semiboldw w-full cursor-pointer"
+              disabled={isLoading || !formik.isValid}
+              className="px-5 h-12 bg-[#27AE60] rounded-[6px] text-[18px] leading-8 text-white font-semibold flex items-center justify-center w-full cursor-pointer disabled:opacity-50"
             >
-              Save Changes
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                "Save Changes"
+              )}
             </button>
 
             <button className="px-5 h-12 border border-[#27AE60] rounded-[6px] text-[18px] leading-8 text-[#27AE60] font-semiboldw w-full cursor-pointer">

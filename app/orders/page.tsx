@@ -31,155 +31,92 @@ export default function Page() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // ----- 1. State for Filters -----
-  const [activeStatus, setActiveStatus] = useState(
-    searchParams.get("status") || "All orders",
-  );
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [sortBy, setSortBy] = useState(searchParams.get("sort") || "recent");
+  const activeStatus = searchParams.get("status") || "all";
+  const sortBy = searchParams.get("sort") || "recent";
+  const page = Number(searchParams.get("page") || "1");
+  const limit = Number(searchParams.get("perPage") || "10");
 
-  // Sync 'status' from URL if it changes externally
-  useEffect(() => {
-    const statusFromUrl = searchParams.get("status");
-    if (statusFromUrl) setActiveStatus(statusFromUrl);
-  }, [searchParams]);
-
-  const handleStatusChange = (newStatus: string) => {
-    setActiveStatus(newStatus);
+  const updateUrl = (updates: Record<string, string | number | undefined>) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (newStatus === "All orders") {
-      params.delete("status");
-    } else {
-      params.set("status", newStatus);
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === undefined || value === "all" || value === "") {
+        params.delete(key);
+      } else {
+        params.set(key, value.toString());
+      }
+    });
+
+    if (!updates.page && updates.page !== page) {
+      params.set("page", "1");
     }
-    params.set("page", "1"); // Reset to page 1 on filter change
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const handleSortChange = (value: string) => {
-    setSortBy(value);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("sort", value);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
-
-  // ----- 2. Fetch Data (Get All/Large Batch for Client-side processing) -----
-  // Note: Since API doesn't support pagination meta, we fetch a large limit
-  // to perform client-side pagination and filtering.
-  const { data: ordersData, isLoading } = useGetOrderAssignmentsQuery({
-    page: 1,
-    limit: 1000,
+  const {
+    data: ordersData,
+    isLoading,
+    isFetching,
+  } = useGetOrderAssignmentsQuery({
+    page,
+    limit,
+    status: activeStatus === "all" ? undefined : activeStatus.toUpperCase(),
   });
 
-  // ----- 3. Process Data (Map -> Filter -> Sort) -----
+  // Fetch summary batch for counts and metrics (limit 1000)
+  const { data: summaryData, isLoading: isSummaryLoading } =
+    useGetOrderAssignmentsQuery({ limit: 1000 });
+
+  const mapAssignmentToOrder = (assignment: any): Order | null => {
+    if (!assignment?.order) return null;
+    const items = assignment.order.items || [];
+    const orderId = assignment.orderId || "";
+    const assignedAt = assignment.assignedAt || "";
+    const status = assignment.status?.toLowerCase() || "";
+
+    return {
+      id: assignment.id,
+      orderNumber:
+        orderId.length >= 8 ? orderId.slice(0, 8).toUpperCase() : orderId,
+      date: assignedAt.split("T")[0] || "",
+      itemsCount: items.length,
+      totalWeight:
+        items.reduce(
+          (sum: number, item: any) =>
+            sum + (item.weightAtTime || 0) * item.quantity,
+          0,
+        ) + "kg",
+      totalAmount: items.reduce(
+        (sum: number, item: any) => sum + item.product.baseCost * item.quantity,
+        0,
+      ),
+      earnings: items.reduce(
+        (sum: number, item: any) => sum + item.product.baseCost * item.quantity,
+        0,
+      ),
+      status: status as OrderStatus,
+    } as Order;
+  };
+
   const allOrders: Order[] =
     ordersData?.data
-      ?.map((assignment) => {
-        // Defensive check: Ensure assignment.order exists
-        if (!assignment?.order) {
-          console.warn("Missing order details for assignment:", assignment.id);
-          return null;
-        }
-
-        const items = assignment.order.items || [];
-        const orderId = assignment.orderId || "";
-        const assignedAt = assignment.assignedAt || "";
-        const status = assignment.status?.toLowerCase() || "";
-
-        return {
-          id: assignment.id,
-          orderNumber:
-            orderId.length >= 8 ? orderId.slice(0, 8).toUpperCase() : orderId,
-          date: assignedAt.split("T")[0] || "",
-          itemsCount: items.length,
-          totalWeight:
-            items.reduce(
-              (sum, item) => sum + (item.weightAtTime || 0) * item.quantity,
-              0,
-            ) + "kg", // Calculated from items
-          totalAmount: items.reduce(
-            (sum, item) => sum + item.product.baseCost * item.quantity,
-            0,
-          ),
-          earnings: items.reduce(
-            (sum, item) => sum + item.product.baseCost * item.quantity,
-            0,
-          ), // Assuming totalAmount is earnings for now
-          status: status as OrderStatus,
-        } as Order;
-      })
+      ?.map(mapAssignmentToOrder)
       .filter((order): order is Order => order !== null) || [];
 
-  const filteredOrders = allOrders.filter((order) => {
-    // A. Status Filter
-    if (
-      activeStatus !== "All orders" &&
-      order.status !== activeStatus.toLowerCase().replace(/ /g, "_")
-    ) {
-      return false;
-    }
+  const summaryOrders: Order[] =
+    summaryData?.data
+      ?.map(mapAssignmentToOrder)
+      .filter((order): order is Order => order !== null) || [];
 
-    // B. Date Range Filter
-    if (dateRange?.from) {
-      const orderDate = new Date(order.date);
-      const fromDate = new Date(dateRange.from);
-      fromDate.setHours(0, 0, 0, 0);
-
-      if (dateRange.to) {
-        const toDate = new Date(dateRange.to);
-        toDate.setHours(23, 59, 59, 999);
-        if (orderDate < fromDate || orderDate > toDate) return false;
-      } else {
-        if (orderDate < fromDate) return false;
-      }
-    }
-
-    return true;
-  });
-
-  // C. Sorting
-  const sortedOrders = [...filteredOrders].sort((a, b) => {
-    if (sortBy === "oldest") {
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
-    }
-    // Default: recent / newest first
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
-  });
-
-  // ----- 4. Pagination Logic -----
-  const currentPage = Number(searchParams.get("page") ?? 1);
-  const itemsPerPage = Number(searchParams.get("perPage") ?? 10);
-
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedOrders = sortedOrders.slice(
-    startIndex,
-    startIndex + itemsPerPage,
-  );
-
-  // ----- 5. Metrics Calculation (Based on ALL data or Filtered data?) -----
-  // Usually metrics reflect the *filtered* view or *total* view.
-  // Let's make them reflect the Total view (independent of filters) except "Pending"
-  const totalOrdersCount = allOrders.length;
-  const totalWeight =
-    allOrders.reduce(
-      (sum, order) => sum + parseFloat(order.totalWeight.replace("kg", "")),
-      0,
-    ) + "kg";
-  const totalEarnings = allOrders.reduce(
-    (sum, order) => sum + order.earnings,
-    0,
-  );
-  const pendingOrdersCount = allOrders
-    .filter((o) => o.status === "pending")
-    .filter((o) => o.status === "pending").length;
+  const totalItems = allOrders.length;
 
   const filterOptions = [
-    "All orders",
-    "Pending",
-    "Accepted",
-    "Rejected",
-    "Ready for Pickup",
-    "Completed",
+    { label: "All orders", value: "all" },
+    { label: "Pending", value: "pending" },
+    { label: "Accepted", value: "accepted" },
+    { label: "Rejected", value: "rejected" },
+    { label: "Processing", value: "processing" },
+    { label: "Ready", value: "ready" },
+    { label: "Completed", value: "completed" },
   ];
 
   const getFilterStyle = (status: string, isActive: boolean) => {
@@ -196,6 +133,11 @@ export default function Page() {
           container: "bg-[#FFF8E6] text-[#F2C94C]",
           count: "bg-[#F2C94C] text-white",
         };
+      case "ready":
+        return {
+          container: "bg-[#F3E8FF] text-[#9333EA]",
+          count: "bg-[#9333EA] text-white",
+        };
       case "shipped":
         return {
           container: "bg-[#E6F7FF] text-[#2F80ED]",
@@ -207,7 +149,6 @@ export default function Page() {
           container: "bg-[#FFEEEE] text-[#EB5757]",
           count: "bg-[#EB5757] text-white",
         };
-      case "delivered":
       case "ready for pickup":
         return {
           container: "bg-[#F3E8FF] text-[#9333EA]",
@@ -219,7 +160,7 @@ export default function Page() {
           container: "bg-[#E3FFEF] text-[#27AE60]",
           count: "bg-[#27AE60] text-white",
         };
-      case "all orders":
+      case "all":
       default:
         return {
           container: "bg-[#E3FFEF] text-primary",
@@ -227,6 +168,24 @@ export default function Page() {
         };
     }
   };
+
+  // Metrics Calculation based on summary (Total)
+  const totalOrdersCount = isSummaryLoading ? "..." : summaryOrders.length;
+  const totalWeight = isSummaryLoading
+    ? "..."
+    : summaryOrders
+        .reduce(
+          (sum, order) => sum + parseFloat(order.totalWeight.replace("kg", "")),
+          0,
+        )
+        .toFixed(2) + "kg";
+  const totalEarnings = summaryOrders.reduce(
+    (sum, order) => sum + order.earnings,
+    0,
+  );
+  const pendingOrdersCount = isSummaryLoading
+    ? "..."
+    : summaryOrders.filter((o) => o.status === "pending").length;
 
   return (
     <div className="bg-[#FAFAFA] space-y-8 min-h-screen h-full flex flex-col">
@@ -248,7 +207,11 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="w-full grid xl:grid-cols-4 grid-cols-2 gap-4">
+        <div
+          className={`w-full grid xl:grid-cols-4 grid-cols-2 gap-4 transition-opacity ${
+            isSummaryLoading ? "opacity-50" : ""
+          }`}
+        >
           <MerticsCard
             title="Total Orders"
             value={totalOrdersCount}
@@ -277,7 +240,7 @@ export default function Page() {
           />
           <MerticsCard
             title="Total Earnings"
-            value={`₦${totalEarnings.toLocaleString()}`}
+            value={isSummaryLoading ? "..." : `₦${totalEarnings.toLocaleString()}`}
             description="In your local currency"
             icon={
               <Image src={walletAdd} alt="" className="w-4 h-4 md:w-6 md:h-6" />
@@ -301,24 +264,27 @@ export default function Page() {
           slidesPerView="auto"
           spaceBetween={16}
           freeMode
-          className="mt-6 pb-2 w-full"
+          observer
+          observeParents
+          className={`pb-2 w-full transition-opacity ${
+            isFetching ? "opacity-60 pointer-events-none" : ""
+          }`}
         >
           {filterOptions.map((option) => {
-            const isActive = activeStatus === option;
-            const styles = getFilterStyle(option, isActive);
-            // Count for each tab
+            const isActive = activeStatus === option.value;
+            const styles = getFilterStyle(option.value, isActive);
+
             const count =
-              option === "All orders"
-                ? allOrders.length
-                : allOrders.filter(
-                    (o) => o.status === option.toLowerCase().replace(/ /g, "_"),
-                  ).length;
+              option.value === "all"
+                ? summaryOrders.length
+                : summaryOrders.filter((o) => o.status === option.value).length;
 
             return (
-              <SwiperSlide key={option} className="!w-auto flex-shrink-0">
+              <SwiperSlide key={option.value} className="!w-auto flex-shrink-0">
                 <button
                   type="button"
-                  onClick={() => handleStatusChange(option)}
+                  disabled={isFetching}
+                  onClick={() => updateUrl({ status: option.value })}
                   className={`
             inline-flex items-center gap-2
             px-4 py-2 rounded-[6px]
@@ -327,11 +293,11 @@ export default function Page() {
             ${styles.container}
           `}
                 >
-                  {option}
+                  {option.label}
                   <span
                     className={`px-2 py-0.5 rounded-xl text-xs ${styles.count}`}
                   >
-                    {isLoading ? "..." : count}
+                    {isSummaryLoading ? "..." : count}
                   </span>
                 </button>
               </SwiperSlide>
@@ -339,11 +305,19 @@ export default function Page() {
           })}
         </Swiper>
 
-        <div className="overflow-x-auto w-full">
+        <div
+          className={`overflow-x-auto w-full transition-opacity ${
+            isFetching ? "opacity-60 pointer-events-none" : ""
+          }`}
+        >
           <div className="flex items-center md:justify-end justify-start gap-3 min-w-100 w-full">
-            <DatePickerWithRange onDateChange={setDateRange} />
+            <DatePickerWithRange onDateChange={() => {}} />
 
-            <Select value={sortBy} onValueChange={handleSortChange}>
+            <Select
+              value={sortBy}
+              disabled={isFetching}
+              onValueChange={(value) => updateUrl({ sort: value })}
+            >
               <SelectTrigger className="py-3 px-4 text-[16px] font-semibold">
                 <SelectValue placeholder="Newest First" />
               </SelectTrigger>
@@ -360,7 +334,7 @@ export default function Page() {
       </div>
 
       <div className="flex-1 flex w-full">
-        {paginatedOrders.length === 0 && !isLoading ? (
+        {allOrders.length === 0 && !isLoading ? (
           <div className="flex-1 flex items-center justify-center">
             <EmptyState
               icon={emptyIcon}
@@ -368,18 +342,16 @@ export default function Page() {
               description="Try adjusting your filters or date range."
               buttonText="Clear Filters"
               onButtonClick={() => {
-                setActiveStatus("All orders");
-                setDateRange(undefined);
-                router.replace(pathname);
+                updateUrl({ status: "all", page: 1 });
               }}
             />
           </div>
         ) : (
           <div className="w-full">
             <OrderTable
-              orders={paginatedOrders}
+              orders={allOrders}
               isLoading={isLoading}
-              totalItems={filteredOrders.length}
+              totalItems={totalItems}
             />
           </div>
         )}

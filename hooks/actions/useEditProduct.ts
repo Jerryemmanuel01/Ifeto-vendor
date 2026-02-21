@@ -148,7 +148,7 @@ export const useEditProduct = (productId: string) => {
         description: product.description || "",
         baseCost: product.baseCost?.toString() || "",
         weight: product.weight?.toString() || "",
-        category: product.categoryId || "",
+        category: product.categoryId || product.category?.id || "",
         quantity: product.quantity?.toString() || "",
         storageInstructions: product.storageInstructions || "",
         images: product.images?.map((url) => ({ url })) || [],

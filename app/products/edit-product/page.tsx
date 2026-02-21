@@ -17,7 +17,7 @@ import { CustomSelect } from "@/components/general/CustomSelect";
 import { useSearchParams } from "next/navigation";
 import { useEditProduct } from "@/hooks/actions/useEditProduct";
 import Spinner from "@/components/loaders/Spinner";
-import { Loader2 } from "lucide-react";
+import { Loader2, TriangleAlert } from "lucide-react";
 
 function EditProductContent() {
   const searchParams = useSearchParams();
@@ -33,6 +33,7 @@ function EditProductContent() {
     handleSubmitDraft,
     handleSubmitReview,
     isFetching,
+    productData,
   } = useEditProduct(productId);
 
   if (isFetching) {
@@ -56,6 +57,7 @@ function EditProductContent() {
 
   return (
     <div className="bg-[#FAFAFA] space-y-6 min-h-screen h-full flex flex-col">
+      {/* Header code ... */}
       <div className="flex md:flex-col gap-2 md:py-6 py-3 md:px-8 px-6 shadow-custom2 flex-row">
         <Link
           href="/products"
@@ -73,6 +75,22 @@ function EditProductContent() {
       </div>
 
       <div className="w-full h-full">
+        {productData?.approvalStatus === "REJECTED" && (
+          <div className="md:mx-8 mx-6 mb-4 p-4 bg-[#FEF3F2] border border-[#FECDCA] rounded-[8px] flex items-start gap-3">
+            {/* <Image src={danger} alt="danger" className="w-5 h-5 mt-0.5" /> */}
+            <TriangleAlert className="text-[#B42318]"/>
+            <div>
+              <h3 className="text-[#B42318] font-semibold text-[14px] leading-5">
+                Product Rejected
+              </h3>
+              <p className="text-[#B42318] text-[14px] leading-5 mt-1">
+                <span className="font-semibold">Admin Note:</span>{" "}
+                {productData.rejectionReason || "No reason provided."}
+              </p>
+            </div>
+          </div>
+        )}
+
         <FormikProvider value={formik}>
           <Form
             className="md:px-8 px-6 bg-[#FFFFFF] md:py-6 py-4 space-y-4"
@@ -407,6 +425,8 @@ function EditProductContent() {
               >
                 {isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
+                ) : productData?.approvalStatus === "REJECTED" ? (
+                  "Resubmit for Review"
                 ) : (
                   "Update Product"
                 )}

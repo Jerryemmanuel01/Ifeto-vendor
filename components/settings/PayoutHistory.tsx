@@ -1,100 +1,125 @@
+import { useSearchParams } from "next/navigation";
+import { useGetTransactionsQuery } from "@/lib/features/wallet/walletApi";
 import Table, { Column } from "../Table/Table";
+import Pagination from "../Pagination";
+import { ItemsPerPage } from "../Table/ItemsPerPage";
 
-type Payout = {
+type Transaction = {
   id: string;
-  reference: string;
-  date: string;
+  referenceId: string;
+  createdAt: string;
   amount: number;
-  status: "paid" | "failed" | "pending";
+  status: "PENDING" | "COMPLETED" | "FAILED";
+  type: string;
+  description: string;
 };
 
 export default function PayoutHistory() {
-  const isLoading = false;
+  const searchParams = useSearchParams();
+  const page = Number(searchParams.get("page") || "1");
+  const limit = Number(searchParams.get("perPage") || "10");
 
-  const payouts: Payout[] = [
-    {
-      id: "1",
-      reference: "PAYOUT-1001",
-      date: "2025-12-23",
-      amount: 3800,
-      status: "paid",
-    },
-    {
-      id: "2",
-      reference: "PAYOUT-1002",
-      date: "2025-12-22",
-      amount: 3500,
-      status: "failed",
-    },
-    {
-      id: "3",
-      reference: "PAYOUT-1003",
-      date: "2025-12-21",
-      amount: 7600,
-      status: "pending",
-    },
-  ];
+  const { data: transactionsData, isLoading } = useGetTransactionsQuery({
+    page,
+    limit,
+    // type: "PAYOUT", // Optional: Filter by payout if desired
+  });
+
+  const transactions =
+    transactionsData?.data?.data?.map((item) => ({
+      id: item.id,
+      referenceId: item.referenceId || "N/A",
+      createdAt: item.createdAt,
+      amount: item.amount,
+      status: item.status,
+      type: item.type,
+      description: item.description,
+    })) || [];
 
   const statusMap = {
-    paid: (
-      <span className="px-4 py-1 text-[14px] font-medium rounded-full bg-[#34C7591A] text-[#34C759]">
-        Paid
+    COMPLETED: (
+      <span className="px-3 py-1 text-xs font-medium rounded-full bg-[#34C7591A] text-[#34C759]">
+        Completed
       </span>
     ),
-    failed: (
-      <span className="px-4 py-1 text-[14px] font-medium rounded-full bg-[#E53E3E1A] text-[#E53E3E]">
+    FAILED: (
+      <span className="px-3 py-1 text-xs font-medium rounded-full bg-[#E53E3E1A] text-[#E53E3E]">
         Failed
       </span>
     ),
-    pending: (
-      <span className="px-4 py-1 text-[14px] font-medium rounded-full bg-[#F59E0B1A] text-[#F59E0B]">
+    PENDING: (
+      <span className="px-3 py-1 text-xs font-medium rounded-full bg-[#F59E0B1A] text-[#F59E0B]">
         Pending
       </span>
     ),
   };
 
-  const columns: Column<Payout>[] = [
+  const columns: Column<Transaction>[] = [
     {
       header: "Date",
-      render: (row) => (
-        <p className="text-[14px] font-medium text-[#5A5A5A]">{row.date}</p>
+      render: (row: Transaction) => (
+        <p className="text-sm font-medium text-[#5A5A5A]">
+          {new Date(row.createdAt).toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })}
+        </p>
       ),
     },
     {
+      header: "Description",
+      accessor: "description",
+    },
+    {
       header: "Reference",
-      accessor: "reference",
+      accessor: "referenceId",
     },
     {
       header: "Amount",
-      render: (row) => (
-        <span className="font-semibold text-[#2A2A2A]">
+      render: (row: Transaction) => (
+        <span className="text-sm font-semibold text-[#2A2A2A]">
           ₦{row.amount.toLocaleString()}
         </span>
       ),
     },
     {
       header: "Status",
-      render: (row) => statusMap[row.status],
+      render: (row: Transaction) =>
+        statusMap[row.status as keyof typeof statusMap] || row.status,
     },
   ];
 
+  const totalItems = transactionsData?.data?.meta?.total || 0;
+
   return (
-    <div className="bg-[#FFFFFF] shadow-custom2 rounded-2xl p-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-[24px] leading-8 font-semibold text-[#2A2A2A]">
-          Payout History
+    <div className="bg-[#FFFFFF] shadow-custom2 rounded-2xl p-6 space-y-6 flex flex-col h-full">
+      <div className="space-y-1">
+        <h1 className="text-xl leading-8 font-semibold text-[#2A2A2A]">
+          Transaction History
         </h1>
-        <p className="text-[14px] leading-5 text-[#787878]">
-          Track all payouts sent to your bank account
+        <p className="text-sm leading-5 text-[#787878]">
+          Track all your earnings, payouts, and adjustments.
         </p>
       </div>
 
-      <Table
-        columns={columns}
-        data={payouts}
-        isLoading={isLoading}
-        loadingRows={10}
-      />
+      <div className="flex-1">
+        <Table
+          columns={columns}
+          data={transactions}
+          isLoading={isLoading}
+          loadingRows={limit}
+        />
+      </div>
+
+      <div
+        className={`flex items-center justify-between pt-4 w-full mt-4 transition-opacity ${
+          isLoading ? "opacity-50 pointer-events-none" : ""
+        }`}
+      >
+        <ItemsPerPage />
+        <Pagination totalItems={totalItems} perPage={limit} />
+      </div>
     </div>
   );
 }

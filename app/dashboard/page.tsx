@@ -81,7 +81,10 @@ export default function Page() {
           <div className="md:space-y-2 space-y-3">
             <div className="flex items-center justify-between">
               <h1 className="md:text-[32px] text-[16px] md:leading-8 leading-6 font-medium text-[#2A2A2A]">
-                Welcome, <span className="font-bold">Halimah Enterprise</span>
+                Welcome,{" "}
+                <span className="font-bold">
+                  {user?.lastName} {user?.firstName}
+                </span>
               </h1>
 
               <div className="block md:hidden">

@@ -26,6 +26,7 @@ import AccountDetailsForm from "@/components/onboarding/AccountDetailsForm";
 import OnboardingSteps from "@/components/onboarding/OnboardingSteps";
 import DashboardSkeleton from "@/components/skeletons/DashboardSkeleton";
 import { useGetProfileQuery } from "@/lib/features/profile/profileApi";
+import PendingApproval from "@/components/dashboard/PendingApproval";
 
 export default function Page() {
   const router = useRouter();
@@ -41,11 +42,7 @@ export default function Page() {
     router.replace(`?range=${value}`, { scroll: false });
   }, [value, router]);
 
-  const orders = [
-    { id: "#1024", weight: "300kg", time: "10:42 AM" },
-    { id: "#1025", weight: "300kg", time: "10:42 AM" },
-    { id: "#1026", weight: "300kg", time: "10:42 AM" },
-  ];
+  const orders: any = [];
 
   const { data: response, isLoading } = useGetProfileQuery();
   const user = response?.data;
@@ -55,13 +52,14 @@ export default function Page() {
   }
 
   const isOnboarding = user?.onboarding?.status !== "COMPLETE";
+  const isPendingApproval =
+    user?.onboarding?.accountStatus === "PENDING_APPROVAL";
 
   if (isOnboarding) {
     return (
       <div className="flex flex-col gap-6">
         <OnboardingSteps />
 
-        {/* Conditional Rendering of Forms based on Onboarding Status */}
         {!user?.onboarding?.isBusinessInfoComplete && <BusinessInfoForm />}
 
         {user?.onboarding?.isBusinessInfoComplete &&
@@ -72,6 +70,10 @@ export default function Page() {
           !user?.onboarding?.isAccountDetailsComplete && <AccountDetailsForm />}
       </div>
     );
+  }
+
+  if (isPendingApproval) {
+    return <PendingApproval firstName={user?.firstName} />;
   }
 
   return (

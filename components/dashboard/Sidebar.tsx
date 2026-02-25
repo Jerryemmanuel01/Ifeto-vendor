@@ -53,7 +53,7 @@ const Sidebar = ({ isOpen, onClose, isLoading, userProfile }: SidebarProps) => {
   };
 
   // Determinse onboarding status from user profile
-  const isOnboarding = user?.onboarding?.status !== "COMPLETE";
+  const isOnboarding = user?.onboarding?.accountStatus !== "VERIFIED";
 
   const menuItems = [
     {

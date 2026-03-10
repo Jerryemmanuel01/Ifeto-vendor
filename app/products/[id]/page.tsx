@@ -15,6 +15,7 @@ import {
   Scale,
   Layers,
   Trash2,
+  TriangleAlert,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -110,15 +111,14 @@ export default function ProductDetailsPage() {
   }
 
   // Helper for status badge
-  const getStatusBadge = (status: string, approvalStatus: string) => {
-    if (status === "DRAFT") {
-      return (
-        <span className="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-full font-medium">
-          Draft
-        </span>
-      );
-    }
+  const getStatusBadge = (approvalStatus: string) => {
     switch (approvalStatus) {
+      case "DRAFT":
+        return (
+          <span className="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-full font-medium">
+            Draft
+          </span>
+        );
       case "APPROVED":
         return (
           <span className="px-3 py-1 text-sm bg-[#E3FFEF] text-[#27AE60] rounded-full font-medium">
@@ -166,13 +166,23 @@ export default function ProductDetailsPage() {
             <span>Delete</span>
           </button>
 
-          <Link
-            href={`/products/edit-product?id=${id}`}
-            className="flex items-center gap-2 px-4 py-2 bg-[#27AE60] text-white rounded-lg hover:bg-[#219151] transition-colors font-medium"
-          >
-            <Edit className="w-4 h-4" />
-            <span>Edit Product</span>
-          </Link>
+          {product.approvalStatus === "REJECTED" ? (
+            <Link
+              href={`/products/resubmit-product?id=${id}`}
+              className="flex items-center gap-2 px-4 py-2 bg-[#27AE60] text-white rounded-lg hover:bg-[#219151] transition-colors font-medium"
+            >
+              <Edit className="w-4 h-4" />
+              <span>Resubmit</span>
+            </Link>
+          ) : (
+            <Link
+              href={`/products/edit-product?id=${id}`}
+              className="flex items-center gap-2 px-4 py-2 bg-[#27AE60] text-white rounded-lg hover:bg-[#219151] transition-colors font-medium"
+            >
+              <Edit className="w-4 h-4" />
+              <span>Edit Product</span>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -186,6 +196,21 @@ export default function ProductDetailsPage() {
         variant="destructive"
         isLoading={isDeleting}
       />
+
+      {product.approvalStatus === "REJECTED" && (
+        <div className="p-4 bg-[#FEF3F2] border border-[#FECDCA] rounded-xl flex items-start gap-3">
+          <TriangleAlert className="text-[#B42318] w-5 h-5 mt-0.5 shrink-0" />
+          <div>
+            <h3 className="text-[#B42318] font-semibold text-sm">
+              Product Rejected
+            </h3>
+            <p className="text-[#B42318] text-sm mt-1">
+              <span className="font-semibold">Admin Note:</span>{" "}
+              {product.rejectionReason || "No reason provided."}
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left Column - Images */}
@@ -206,7 +231,7 @@ export default function ProductDetailsPage() {
 
             {/* Status Overlay */}
             <div className="absolute top-4 left-4">
-              {getStatusBadge(product.status, product.approvalStatus)}
+              {getStatusBadge(product.approvalStatus)}
             </div>
           </div>
 

@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense } from "react";
 import { Form, Field, ErrorMessage, FormikProvider } from "formik";
 
 import arrowLeft from "@/assets/svgs/arrow-left.svg";
@@ -15,12 +15,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { CustomSelect } from "@/components/general/CustomSelect";
 import { useSearchParams } from "next/navigation";
-import { useEditProduct } from "@/hooks/actions/useEditProduct";
+import { useResubmitProduct } from "@/hooks/actions/useResubmitProduct";
 import Spinner from "@/components/loaders/Spinner";
 import { Loader2, TriangleAlert } from "lucide-react";
 import { formatNumberWithCommas } from "@/utils/utils";
 
-function EditProductContent() {
+function ResubmitProductContent() {
   const searchParams = useSearchParams();
   const productId = searchParams.get("id") || "";
 
@@ -31,11 +31,10 @@ function EditProductContent() {
     categories,
     handleImageUpload,
     removeImage,
-    handleSubmitDraft,
-    handleSubmitUpdate,
+    handleSubmitResubmission,
     isFetching,
     productData,
-  } = useEditProduct(productId);
+  } = useResubmitProduct(productId);
 
   if (isFetching) {
     return (
@@ -58,7 +57,6 @@ function EditProductContent() {
 
   return (
     <div className="bg-[#FAFAFA] space-y-6 min-h-screen h-full flex flex-col">
-      {/* Header code ... */}
       <div className="flex md:flex-col gap-2 md:py-6 py-3 md:px-8 px-6 shadow-custom2 flex-row">
         <Link
           href="/products"
@@ -71,11 +69,26 @@ function EditProductContent() {
         </Link>
 
         <h1 className="md:text-[24px] text-[16px] md:leading-8 leading-6 text-[#5A5A5A] font-semibold md:w-full md:text-start w-full text-center">
-          Edit Product
+          Resubmit Product
         </h1>
       </div>
 
       <div className="w-full h-full">
+        {productData?.approvalStatus === "REJECTED" && (
+          <div className="md:mx-8 mx-6 mb-4 p-4 bg-[#FEF3F2] border border-[#FECDCA] rounded-[8px] flex items-start gap-3">
+            <TriangleAlert className="text-[#B42318]" />
+            <div>
+              <h3 className="text-[#B42318] font-semibold text-[14px] leading-5">
+                Product Rejected
+              </h3>
+              <p className="text-[#B42318] text-[14px] leading-5 mt-1">
+                <span className="font-semibold">Admin Note:</span>{" "}
+                {productData.rejectionReason || "No reason provided."}
+              </p>
+            </div>
+          </div>
+        )}
+
         <FormikProvider value={formik}>
           <Form
             className="md:px-8 px-6 bg-[#FFFFFF] md:py-6 py-4 space-y-4"
@@ -404,7 +417,7 @@ function EditProductContent() {
                       }
                       className={`
     w-full
-    aspect-[4/3] sm:aspect-[1/1]
+    aspect-4/3 sm:aspect-square
     border border-dashed rounded-[8px]
     flex flex-col items-center justify-center
     gap-1 sm:gap-2
@@ -468,7 +481,7 @@ function EditProductContent() {
             <div className="flex flex-col md:flex-row items-center gap-4 py-0 md:py-6">
               <button
                 type="button"
-                onClick={() => handleSubmitUpdate()}
+                onClick={() => handleSubmitResubmission()}
                 disabled={isLoading}
                 className={`px-5 h-12 rounded-[6px] text-[18px] leading-8 font-semibold w-full cursor-pointer flex items-center justify-center gap-2 transition-colors
                   ${
@@ -481,17 +494,8 @@ function EditProductContent() {
                 {isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
-                  "Update Product"
+                  "Resubmit for Review"
                 )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSubmitDraft()}
-                disabled={isLoading}
-                className="px-5 h-12 border border-[#27AE60] rounded-[6px] text-[18px] leading-8 text-[#27AE60] font-semibold w-full cursor-pointer disabled:opacity-50"
-              >
-                Save as Draft
               </button>
 
               <Link
@@ -517,7 +521,7 @@ export default function Page() {
         </div>
       }
     >
-      <EditProductContent />
+      <ResubmitProductContent />
     </Suspense>
   );
 }

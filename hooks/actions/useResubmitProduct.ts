@@ -6,12 +6,12 @@ import { AddProductSchema } from "@/utils/schema";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
-  useUpdateProductMutation,
   useGetCategoriesQuery,
   useGetProductQuery,
+  useSubmitProductMutation,
 } from "@/lib/features/products/productsApi";
 
-export const useEditProduct = (productId: string) => {
+export const useResubmitProduct = (productId: string) => {
   const router = useRouter();
 
   // Fetch product data
@@ -23,13 +23,13 @@ export const useEditProduct = (productId: string) => {
     skip: !productId,
   });
 
-  const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+  const [submitProduct, { isLoading: isSubmitting }] =
+    useSubmitProductMutation();
 
   const { data: categoriesData, isLoading: isLoadingCategories } =
     useGetCategoriesQuery();
 
   // Local state
-  const [isDraft, setIsDraft] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
   // Formik setup
@@ -114,24 +114,23 @@ export const useEditProduct = (productId: string) => {
           categoryId: values.category,
           images: finalImageUrls,
           storageInstructions: values.storageInstructions,
-          status: isDraft ? "DRAFT" : "PUBLISHED",
+          status: "PUBLISHED", // Always set to PUBLISHED when submitting for review
         };
 
         if (!productId) {
           throw new Error("Product ID is missing");
         }
 
-        await updateProduct({
+        // Submit the product for review with the new fixes
+        await submitProduct({
           id: productId,
-          body: payload as any, // Casting because Partial<CreateProductRequest> might be strict
+          body: payload as any,
         }).unwrap();
 
-        toast.success(
-          isDraft ? "Product updated as draft" : "Product updated successfully",
-        );
+        toast.success("Product updated and submitted for review successfully");
         router.push("/products");
       } catch (error: any) {
-        toast.error(error?.data?.message || "Failed to update product");
+        toast.error(error?.data?.message || "Failed to resubmit product");
         console.error(error);
       } finally {
         setIsUploading(false);
@@ -153,9 +152,6 @@ export const useEditProduct = (productId: string) => {
         storageInstructions: product.storageInstructions || "",
         images: product.images?.map((url) => ({ url })) || [],
       });
-      // Set draft status based on current product status if needed,
-      // but usually editing implies we might change status on save.
-      // Current logic relies on which button is clicked (Review vs Draft).
     }
   }, [productData]);
 
@@ -209,26 +205,19 @@ export const useEditProduct = (productId: string) => {
     formik.setFieldValue("images", updated);
   };
 
-  const handleSubmitDraft = () => {
-    setIsDraft(true);
-    formik.handleSubmit();
-  };
-
-  const handleSubmitUpdate = () => {
-    setIsDraft(false);
+  const handleSubmitResubmission = () => {
     formik.handleSubmit();
   };
 
   return {
     formik,
-    isLoading: isUploading || isUpdating || isLoadingProduct,
+    isLoading: isUploading || isSubmitting || isLoadingProduct,
     isLoadingCategories,
     categories: categoriesData?.data || [],
     handleImageUpload,
     removeImage,
-    handleSubmitDraft,
-    handleSubmitUpdate,
-    productData: productData?.data, // Expose if helpful for UI
+    handleSubmitResubmission,
+    productData: productData?.data,
     isFetching: isLoadingProduct,
   };
 };

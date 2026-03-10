@@ -93,7 +93,7 @@ export default function Page() {
 
   // Transform API data to match UI component structure
   const products =
-    productsData?.data?.data?.map((item) => {
+    productsData?.data?.products?.map((item) => {
       let status: "pending" | "approved" | "rejected" | "draft" = "pending";
 
       if (item.approvalStatus === "DRAFT") status = "draft";

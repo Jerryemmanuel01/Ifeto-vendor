@@ -43,7 +43,7 @@ export interface ProductsResponse {
   success: boolean;
   message: string;
   data: {
-    data: Product[];
+    products: Product[];
     meta: {
       total: number;
       page: number;
@@ -144,11 +144,20 @@ export const productsApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Products"],
     }),
+    submitProduct: builder.mutation<any, UpdateProductRequest>({
+      query: ({ id, body }) => ({
+        url: `/vendor/products/${id}/submit`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Products"],
+    }),
     getCategories: builder.query<GetCategoriesResponse, void>({
       query: () => "/categories",
       // Categories likely don't change often, but we could add a tag if needed.
     }),
   }),
+  overrideExisting: true,
 });
 
 export const {
@@ -157,5 +166,6 @@ export const {
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useSubmitProductMutation,
   useGetCategoriesQuery,
 } = productsApi;

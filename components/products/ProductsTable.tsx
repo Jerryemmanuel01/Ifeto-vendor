@@ -102,7 +102,6 @@ export default function ProductsTable({
       render: (row) => (
         <div className="flex items-center gap-1">
           <span>{statusMap[row.status]}</span>
-          {row.status === "rejected" && <Image src={rightIcon} alt="" />}
         </div>
       ),
     },
@@ -149,18 +148,20 @@ export default function ProductsTable({
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuItem asChild>
-              <Link
-                href={`/products/edit-product?id=${row.id}`}
-                className="flex gap-2 px-2 py-4 cursor-pointer w-full"
-              >
-                <Image src={edit} alt="edit-icon" /> <span>Edit</span>
-              </Link>
-            </DropdownMenuItem>
+            {row.status !== "rejected" && (
+              <DropdownMenuItem asChild>
+                <Link
+                  href={`/products/edit-product?id=${row.id}`}
+                  className="flex gap-2 px-2 py-4 cursor-pointer w-full"
+                >
+                  <Image src={edit} alt="edit-icon" /> <span>Edit</span>
+                </Link>
+              </DropdownMenuItem>
+            )}
 
             {row.status === "rejected" && (
               <DropdownMenuItem asChild className="flex gap-2 px-2 py-4">
-                <Link href={`/products/edit-product?id=${row.id}`}>
+                <Link href={`/products/resubmit-product?id=${row.id}`}>
                   <Image src={repeat} alt="repeat-icon" /> <span>Resubmit</span>
                 </Link>
               </DropdownMenuItem>

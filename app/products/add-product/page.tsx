@@ -17,6 +17,7 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { CustomSelect } from "@/components/general/CustomSelect";
 import { formatNumberWithCommas } from "@/utils/utils";
+import SuccessModal from "@/components/general/SuccessModal";
 
 export default function Page() {
   const {
@@ -24,6 +25,9 @@ export default function Page() {
     isLoading,
     isLoadingCategories,
     categories,
+    isSuccessModalOpen,
+    isDraft,
+    closeSuccessModal,
     handleImageUpload,
     removeImage,
     handleSubmitDraft,
@@ -482,6 +486,21 @@ export default function Page() {
           </Form>
         </FormikProvider>
       </div>
+
+      <SuccessModal
+        isOpen={isSuccessModalOpen}
+        title={
+          isDraft ? "Product Saved to Draft" : "Product Added Successfully"
+        }
+        message={
+          isDraft
+            ? "Your product has been saved as a draft. You can continue editing it later."
+            : "Your product has been submitted and is pending admin review."
+        }
+        buttonText="Back to Products"
+        onClose={closeSuccessModal}
+        onAction={closeSuccessModal}
+      />
     </div>
   );
 }

@@ -31,6 +31,7 @@ import Link from "next/link";
 import {
   useGetProductsQuery,
   useGetCategoriesQuery,
+  useGetProductsStatsQuery,
 } from "@/lib/features/products/productsApi";
 
 import { useDebounce } from "@/hooks/useDebounce";
@@ -75,6 +76,18 @@ export default function Page() {
 
   const { data: categoriesData } = useGetCategoriesQuery();
   const categories = categoriesData?.data || [];
+
+  const { data: statsData } = useGetProductsStatsQuery();
+  const stats = statsData?.data || {
+    total: 0,
+    live: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    draft: 0,
+    outOfStock: 0,
+    lowStock: 0,
+  };
 
   const {
     data: productsData,
@@ -146,37 +159,59 @@ export default function Page() {
         <div className="w-full grid xl:grid-cols-4 grid-cols-2 gap-4">
           <MerticsCard
             title="Total Products"
-            value={totalProducts}
+            value={stats.total}
             description="All products you’ve added"
             icon={<Image src={bag} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
             iconBg={"#2E0BF51A"}
           />
           <MerticsCard
-            title="Approved"
-            value={0}
+            title="Live"
+            value={stats.live}
             description="Live & visible to customers"
-            icon={
-              <Image src={check} alt="" className="w-4 h-4 md:w-6 md:h-6" />
-            }
+            icon={<Image src={greenTruck} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
             iconBg={"#E3FFEF"}
           />
           <MerticsCard
-            title="Ready For Pickup"
-            value={0}
-            description="Awaiting courier"
-            icon={
-              <Image src={clock} alt="" className="w-4 h-4 md:w-6 md:h-6" />
-            }
+            title="Pending"
+            value={stats.pending}
+            description="Awaiting admin approval"
+            icon={<Image src={clock} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
             iconBg={"#F59E0B1A"}
           />
           <MerticsCard
             title="Rejected"
-            value={0}
-            description="Action required"
-            icon={
-              <Image src={danger} alt="" className="w-4 h-4 md:w-6 md:h-6" />
-            }
+            value={stats.rejected}
+            description="Fix issues and resubmit"
+            icon={<Image src={danger} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
             iconBg={"#E53E3E1A"}
+          />
+          <MerticsCard
+            title="Approved"
+            value={stats.approved}
+            description="Approved by admins"
+            icon={<Image src={check} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
+            iconBg={"#E3FFEF"}
+          />
+          <MerticsCard
+            title="Draft"
+            value={stats.draft}
+            description="Unpublished drafts"
+            icon={<Image src={purpleCube} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
+            iconBg={"#2E0BF51A"}
+          />
+          <MerticsCard
+            title="Out of Stock"
+            value={stats.outOfStock}
+            description="Zero inventory"
+            icon={<Image src={danger} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
+            iconBg={"#E53E3E1A"}
+          />
+          <MerticsCard
+            title="Low Stock"
+            value={stats.lowStock}
+            description="Running out soon"
+            icon={<Image src={orangeCube} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
+            iconBg={"#F59E0B1A"}
           />
         </div>
       </div>

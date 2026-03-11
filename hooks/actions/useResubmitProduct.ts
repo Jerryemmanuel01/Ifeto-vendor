@@ -31,6 +31,7 @@ export const useResubmitProduct = (productId: string) => {
 
   // Local state
   const [isUploading, setIsUploading] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   // Formik setup
   const formik = useFormik({
@@ -128,7 +129,7 @@ export const useResubmitProduct = (productId: string) => {
         }).unwrap();
 
         toast.success("Product updated and submitted for review successfully");
-        router.push("/products");
+        setIsSuccessModalOpen(true);
       } catch (error: any) {
         toast.error(error?.data?.message || "Failed to resubmit product");
         console.error(error);
@@ -209,11 +210,18 @@ export const useResubmitProduct = (productId: string) => {
     formik.handleSubmit();
   };
 
+  const closeSuccessModal = () => {
+    setIsSuccessModalOpen(false);
+    router.push("/products");
+  };
+
   return {
     formik,
     isLoading: isUploading || isSubmitting || isLoadingProduct,
     isLoadingCategories,
     categories: categoriesData?.data || [],
+    isSuccessModalOpen,
+    closeSuccessModal,
     handleImageUpload,
     removeImage,
     handleSubmitResubmission,

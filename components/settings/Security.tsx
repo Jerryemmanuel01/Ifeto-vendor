@@ -13,40 +13,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Image from "next/image";
-import { useState } from "react";
+import { useSecurity } from "@/hooks/settings/useSecurity";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { useUpdatePasswordMutation } from "@/lib/features/profile/profileApi";
-import { toast } from "sonner";
 
 export default function Security() {
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const [updatePassword, { isLoading }] = useUpdatePasswordMutation();
-
-  const formik = useFormik({
-    initialValues: {
-      oldPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-    validationSchema: SecuritySchema,
-    validateOnMount: false,
-    onSubmit: async (values, { resetForm }) => {
-      try {
-        await updatePassword({
-          currentPassword: values.oldPassword,
-          newPassword: values.newPassword,
-          confirmPassword: values.confirmPassword,
-        }).unwrap();
-        toast.success("Password changed successfully");
-        resetForm();
-      } catch (error: any) {
-        toast.error(error?.data?.message || "Failed to change password");
-      }
-    },
-  });
+  const {
+    formik,
+    isLoading,
+    showCurrentPassword,
+    setShowCurrentPassword,
+    showNewPassword,
+    setShowNewPassword,
+    showConfirmPassword,
+    setShowConfirmPassword,
+  } = useSecurity();
 
   return (
     <div className="bg-[#FFFFFF] shadow-custom2 rounded-2xl p-6 space-y-6">

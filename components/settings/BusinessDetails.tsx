@@ -1,26 +1,12 @@
 import { BusinessSchema } from "@/utils/schema";
-import { ErrorMessage, Field, Form, FormikProvider, useFormik } from "formik";
+import { ErrorMessage, Field, Form, FormikProvider } from "formik";
 import React from "react";
 import PhoneInput from "react-phone-input-2";
+import { useBusinessDetails } from "@/hooks/settings/useBusinessDetails";
+import { Loader2 } from "lucide-react";
 
 export default function BusinessDetails() {
-  const formik = useFormik({
-    initialValues: {
-      businessName: "",
-      contactPerson: "",
-      emailAddress: "",
-      phone: "",
-      street: "",
-      city: "",
-      state: "",
-      country: "Nigeria",
-    },
-    validationSchema: BusinessSchema,
-    validateOnMount: false,
-    onSubmit: async (values) => {
-      console.log(values);
-    },
-  });
+  const { formik, isLoading } = useBusinessDetails();
 
   return (
     <div className="bg-[#FFFFFF] shadow-custom2 rounded-2xl p-6 space-y-6">
@@ -218,9 +204,14 @@ export default function BusinessDetails() {
             <div className="flex flex-col md:flex-row items-center gap-4 py-0 md:py-6">
               <button
                 type="submit"
-                className="px-5 h-12 bg-[#27AE60] rounded-[6px] text-[18px] leading-8 text-white font-semiboldw w-full cursor-pointer"
+                disabled={isLoading || !formik.isValid}
+                className="px-5 h-12 bg-[#27AE60] rounded-[6px] text-[18px] leading-8 text-white font-semibold flex items-center justify-center w-full cursor-pointer disabled:opacity-50"
               >
-                Save Changes
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  "Save Changes"
+                )}
               </button>
 
               <button className="px-5 h-12 border border-[#27AE60] rounded-[6px] text-[18px] leading-8 text-[#27AE60] font-semiboldw w-full cursor-pointer">

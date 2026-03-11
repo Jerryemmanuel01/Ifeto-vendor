@@ -23,6 +23,7 @@ import { useState, useEffect } from "react";
 import Spinner from "@/components/loaders/Spinner";
 import { toast } from "sonner";
 import ConfirmationModal from "@/components/general/ConfirmationModal";
+import SuccessModal from "@/components/general/SuccessModal";
 
 // SIMULATION MOCK DATA (Commented out for real implementation)
 // const product = {
@@ -54,6 +55,7 @@ export default function ProductDetailsPage() {
 
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   const {
     data: productData,
@@ -76,12 +78,11 @@ export default function ProductDetailsPage() {
   const handleDelete = async () => {
     try {
       await deleteProduct(id).unwrap();
-      toast.success("Product deleted successfully");
-      router.push("/products");
+      setIsDeleteModalOpen(false);
+      setIsSuccessModalOpen(true);
     } catch (err) {
       toast.error("Failed to delete product");
       console.error("Delete error:", err);
-    } finally {
       setIsDeleteModalOpen(false);
     }
   };
@@ -195,6 +196,15 @@ export default function ProductDetailsPage() {
         confirmText="Delete"
         variant="destructive"
         isLoading={isDeleting}
+      />
+
+      <SuccessModal
+        isOpen={isSuccessModalOpen}
+        title="Product Deleted Successfully"
+        message="The product has been permanently removed from your catalog."
+        buttonText="Back to Products"
+        onClose={() => router.push("/products")}
+        onAction={() => router.push("/products")}
       />
 
       {product.approvalStatus === "REJECTED" && (

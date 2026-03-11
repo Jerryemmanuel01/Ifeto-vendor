@@ -24,6 +24,7 @@ import {
 import { toast } from "sonner";
 import { useState } from "react";
 import Spinner from "@/components/loaders/Spinner";
+import SuccessModal from "@/components/general/SuccessModal";
 
 export default function Page() {
   const params = useParams();
@@ -44,6 +45,12 @@ export default function Page() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [tempStatus, setTempStatus] = useState<OrderStatus | null>(null);
 
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successModalContent, setSuccessModalContent] = useState({
+    title: "",
+    message: "",
+  });
+
   const handleStatusUpdate = async (newStatus: OrderStatus) => {
     if (newStatus === "REJECTED") {
       setTempStatus(newStatus);
@@ -53,7 +60,12 @@ export default function Page() {
 
     try {
       await updateStatus({ id, status: newStatus }).unwrap();
-      toast.success(`Order status updated to ${newStatus}`);
+
+      setSuccessModalContent({
+        title: "Order Status Updated",
+        message: `The order status has been successfully changed to ${newStatus}.`,
+      });
+      setIsSuccessModalOpen(true);
     } catch (err) {
       toast.error("Failed to update status");
       console.error(err);
@@ -72,9 +84,15 @@ export default function Page() {
         status: "REJECTED",
         rejectionReason,
       }).unwrap();
-      toast.success("Order rejected successfully");
+
       setIsRejectModalOpen(false);
       setRejectionReason("");
+
+      setSuccessModalContent({
+        title: "Order Rejected",
+        message: "You have successfully rejected this order assignment.",
+      });
+      setIsSuccessModalOpen(true);
     } catch (err) {
       toast.error("Failed to reject order");
       console.error(err);
@@ -342,6 +360,14 @@ export default function Page() {
         </div>
         <OrderTrackingSteps steps={trackingSteps} />
       </div>
+
+      <SuccessModal
+        isOpen={isSuccessModalOpen}
+        title={successModalContent.title}
+        message={successModalContent.message}
+        buttonText="Close"
+        onClose={() => setIsSuccessModalOpen(false)}
+      />
     </div>
   );
 }

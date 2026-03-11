@@ -17,6 +17,7 @@ export const useAddProduct = () => {
     useGetCategoriesQuery();
   const [isDraft, setIsDraft] = useState(false);
   const [isUploading, setIsUploading] = useState(false); // New local state
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -85,6 +86,7 @@ export const useAddProduct = () => {
           images: uploadedImageUrls,
           storageInstructions: values.storageInstructions,
           status: isDraft ? "DRAFT" : "PUBLISHED",
+          submitForReview: !isDraft,
         };
 
         await createProduct(payload as any).unwrap();
@@ -92,7 +94,7 @@ export const useAddProduct = () => {
         toast.success(
           isDraft ? "Product saved as draft" : "Product submitted successfully",
         );
-        router.push("/products");
+        setIsSuccessModalOpen(true);
       } catch (error: any) {
         toast.error(error?.data?.message || "Failed to create product");
         console.error(error);
@@ -162,11 +164,19 @@ export const useAddProduct = () => {
     formik.handleSubmit();
   };
 
+  const closeSuccessModal = () => {
+    setIsSuccessModalOpen(false);
+    router.push("/products");
+  };
+
   return {
     formik,
     isLoading: isUploading || isCreating, // Combined loading state
     isLoadingCategories,
     categories: categoriesData?.data || [],
+    isSuccessModalOpen,
+    isDraft,
+    closeSuccessModal,
     handleImageUpload,
     removeImage,
     handleSubmitDraft,

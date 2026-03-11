@@ -1,24 +1,8 @@
 "use client";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-import { Formik, Form, Field, ErrorMessage } from "formik";
 
 import arrowLeft from "@/assets/svgs/arrow-left.svg";
-import status from "@/assets/svgs/status.svg";
 import Image from "next/image";
-import { AddProductSchema } from "@/utils/schema";
-import Table, { Column } from "@/components/Table/Table";
-import { Link, MapPin } from "lucide-react";
-import OrderTrackingSteps from "@/components/general/OrderTrackingSteps";
-import { getTrackingSteps } from "@/utils/utils";
-import SettingsNav from "@/components/settings/SettingsTabs";
+
 import SettingsTabs from "@/components/settings/SettingsTabs";
 
 export default function Page() {

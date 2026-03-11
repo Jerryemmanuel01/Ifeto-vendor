@@ -23,6 +23,14 @@ export const profileApi = apiSlice.injectEndpoints({
       query: () => "/profile",
       providesTags: ["Profile"],
     }),
+    updateProfile: builder.mutation<any, any>({
+      query: (body) => ({
+        url: "/profile",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Profile"],
+    }),
   }),
 });
 
@@ -30,4 +38,5 @@ export const {
   useGetProfileQuery,
   useUpdateBankDetailsMutation,
   useUpdatePasswordMutation,
+  useUpdateProfileMutation,
 } = profileApi;

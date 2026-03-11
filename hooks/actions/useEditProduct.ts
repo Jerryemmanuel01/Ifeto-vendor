@@ -31,6 +31,7 @@ export const useEditProduct = (productId: string) => {
   // Local state
   const [isDraft, setIsDraft] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   // Formik setup
   const formik = useFormik({
@@ -129,7 +130,7 @@ export const useEditProduct = (productId: string) => {
         toast.success(
           isDraft ? "Product updated as draft" : "Product updated successfully",
         );
-        router.push("/products");
+        setIsSuccessModalOpen(true);
       } catch (error: any) {
         toast.error(error?.data?.message || "Failed to update product");
         console.error(error);
@@ -219,11 +220,19 @@ export const useEditProduct = (productId: string) => {
     formik.handleSubmit();
   };
 
+  const closeSuccessModal = () => {
+    setIsSuccessModalOpen(false);
+    router.push("/products");
+  };
+
   return {
     formik,
     isLoading: isUploading || isUpdating || isLoadingProduct,
     isLoadingCategories,
     categories: categoriesData?.data || [],
+    isSuccessModalOpen,
+    isDraft,
+    closeSuccessModal,
     handleImageUpload,
     removeImage,
     handleSubmitDraft,

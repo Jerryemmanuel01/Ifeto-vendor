@@ -19,6 +19,7 @@ import { useEditProduct } from "@/hooks/actions/useEditProduct";
 import Spinner from "@/components/loaders/Spinner";
 import { Loader2, TriangleAlert } from "lucide-react";
 import { formatNumberWithCommas } from "@/utils/utils";
+import SuccessModal from "@/components/general/SuccessModal";
 
 function EditProductContent() {
   const searchParams = useSearchParams();
@@ -29,6 +30,9 @@ function EditProductContent() {
     isLoading,
     isLoadingCategories,
     categories,
+    isSuccessModalOpen,
+    isDraft,
+    closeSuccessModal,
     handleImageUpload,
     removeImage,
     handleSubmitDraft,
@@ -44,6 +48,8 @@ function EditProductContent() {
       </div>
     );
   }
+
+  console.log(productData?.status);
 
   if (!productId) {
     return (
@@ -404,7 +410,7 @@ function EditProductContent() {
                       }
                       className={`
     w-full
-    aspect-[4/3] sm:aspect-[1/1]
+    aspect-4/3 sm:aspect-square
     border border-dashed rounded-[8px]
     flex flex-col items-center justify-center
     gap-1 sm:gap-2
@@ -480,6 +486,8 @@ function EditProductContent() {
               >
                 {isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
+                ) : productData?.status === "DRAFT" ? (
+                  "Publish Product"
                 ) : (
                   "Update Product"
                 )}
@@ -491,7 +499,9 @@ function EditProductContent() {
                 disabled={isLoading}
                 className="px-5 h-12 border border-[#27AE60] rounded-[6px] text-[18px] leading-8 text-[#27AE60] font-semibold w-full cursor-pointer disabled:opacity-50"
               >
-                Save as Draft
+                {productData?.status === "DRAFT"
+                  ? "Update Draft"
+                  : "Save as Draft"}
               </button>
 
               <Link
@@ -504,6 +514,21 @@ function EditProductContent() {
           </Form>
         </FormikProvider>
       </div>
+
+      <SuccessModal
+        isOpen={isSuccessModalOpen}
+        title={
+          isDraft ? "Product Saved to Draft" : "Product Updated Successfully"
+        }
+        message={
+          isDraft
+            ? "Your product has been saved as a draft. You can continue editing it later."
+            : "Your product has been updated and is pending admin review."
+        }
+        buttonText="Back to Products"
+        onClose={closeSuccessModal}
+        onAction={closeSuccessModal}
+      />
     </div>
   );
 }

@@ -93,6 +93,24 @@ export interface GetProductResponse {
   data: Product;
 }
 
+export interface ProductStats {
+  total: number;
+  live: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  draft: number;
+  outOfStock: number;
+  lowStock: number;
+}
+
+export interface GetProductStatsResponse {
+  success: boolean;
+  message: string;
+  data: ProductStats;
+  statusCode?: number;
+}
+
 export const productsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getProducts: builder.query<ProductsResponse, GetProductsParams>({
@@ -120,6 +138,10 @@ export const productsApi = apiSlice.injectEndpoints({
     getProduct: builder.query<GetProductResponse, string>({
       query: (id) => `/vendor/products/${id}`,
       // No specific tag invalidation needed generally, but could tag individually if needed
+    }),
+    getProductsStats: builder.query<GetProductStatsResponse, void>({
+      query: () => "/vendor/products/stats",
+      providesTags: ["Products"],
     }),
     createProduct: builder.mutation<any, CreateProductRequest>({
       query: (body) => ({
@@ -168,4 +190,5 @@ export const {
   useDeleteProductMutation,
   useSubmitProductMutation,
   useGetCategoriesQuery,
+  useGetProductsStatsQuery,
 } = productsApi;

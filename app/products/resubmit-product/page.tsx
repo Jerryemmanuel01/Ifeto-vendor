@@ -19,6 +19,7 @@ import { useResubmitProduct } from "@/hooks/actions/useResubmitProduct";
 import Spinner from "@/components/loaders/Spinner";
 import { Loader2, TriangleAlert } from "lucide-react";
 import { formatNumberWithCommas } from "@/utils/utils";
+import SuccessModal from "@/components/general/SuccessModal";
 
 function ResubmitProductContent() {
   const searchParams = useSearchParams();
@@ -29,6 +30,8 @@ function ResubmitProductContent() {
     isLoading,
     isLoadingCategories,
     categories,
+    isSuccessModalOpen,
+    closeSuccessModal,
     handleImageUpload,
     removeImage,
     handleSubmitResubmission,
@@ -508,6 +511,15 @@ function ResubmitProductContent() {
           </Form>
         </FormikProvider>
       </div>
+
+      <SuccessModal
+        isOpen={isSuccessModalOpen}
+        title="Product Resubmitted Successfully"
+        message="Your product has been updated based on the admin's feedback and resubmitted for review."
+        buttonText="Back to Products"
+        onClose={closeSuccessModal}
+        onAction={closeSuccessModal}
+      />
     </div>
   );
 }

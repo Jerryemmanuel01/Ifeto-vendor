@@ -26,7 +26,7 @@ export default function PayoutHistory() {
   });
 
   const transactions =
-    transactionsData?.data?.data?.map((item) => ({
+    transactionsData?.data?.transactions?.map((item) => ({
       id: item.id,
       referenceId: item.referenceId || "N/A",
       createdAt: item.createdAt,

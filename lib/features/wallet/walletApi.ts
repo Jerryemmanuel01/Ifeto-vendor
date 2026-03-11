@@ -17,7 +17,7 @@ export interface TransactionsResponse {
   success: boolean;
   message: string;
   data: {
-    data: Transaction[];
+    transactions: Transaction[];
     meta: {
       total: number;
       page: number;

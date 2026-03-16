@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { DatePickerWithRange } from "@/components/general/DatePickerWithRange";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { useGetOrderAssignmentsQuery } from "@/lib/features/orders/ordersApi";
+import { useGetOrderAssignmentsQuery, useGetOrderStatsQuery } from "@/lib/features/orders/ordersApi";
 import OrderTable, { Order, OrderStatus } from "@/components/orders/OrderTable";
 import { DateRange } from "react-day-picker";
 
@@ -35,6 +35,8 @@ export default function Page() {
   const sortBy = searchParams.get("sort") || "recent";
   const page = Number(searchParams.get("page") || "1");
   const limit = Number(searchParams.get("perPage") || "10");
+  const startDate = searchParams.get("startDate") || undefined;
+  const endDate = searchParams.get("endDate") || undefined;
 
   const updateUrl = (updates: Record<string, string | number | undefined>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -60,11 +62,13 @@ export default function Page() {
     page,
     limit,
     status: activeStatus === "all" ? undefined : activeStatus.toUpperCase(),
+    startDate,
+    endDate,
+    sortOrder: sortBy === "recent" ? "desc" : "asc",
   });
 
-  // Fetch summary batch for counts and metrics (limit 1000)
-  const { data: summaryData, isLoading: isSummaryLoading } =
-    useGetOrderAssignmentsQuery({ limit: 1000 });
+  const { data: statsResponse, isLoading: isStatsLoading } = useGetOrderStatsQuery();
+  const stats = statsResponse?.data;
 
   const mapAssignmentToOrder = (assignment: any): Order | null => {
     if (!assignment?.order) return null;
@@ -98,16 +102,11 @@ export default function Page() {
   };
 
   const allOrders: Order[] =
-    ordersData?.data
+    ordersData?.data?.assignments
       ?.map(mapAssignmentToOrder)
       .filter((order): order is Order => order !== null) || [];
 
-  const summaryOrders: Order[] =
-    summaryData?.data
-      ?.map(mapAssignmentToOrder)
-      .filter((order): order is Order => order !== null) || [];
-
-  const totalItems = allOrders.length;
+  const totalItems = ordersData?.data?.meta?.total || allOrders.length;
 
   const filterOptions = [
     { label: "All orders", value: "all" },
@@ -169,23 +168,14 @@ export default function Page() {
     }
   };
 
-  // Metrics Calculation based on summary (Total)
-  const totalOrdersCount = isSummaryLoading ? "..." : summaryOrders.length;
-  const totalWeight = isSummaryLoading
+  const totalOrdersCount = isStatsLoading
     ? "..."
-    : summaryOrders
-        .reduce(
-          (sum, order) => sum + parseFloat(order.totalWeight.replace("kg", "")),
-          0,
-        )
-        .toFixed(2) + "kg";
-  const totalEarnings = summaryOrders.reduce(
-    (sum, order) => sum + order.earnings,
-    0,
-  );
-  const pendingOrdersCount = isSummaryLoading
-    ? "..."
-    : summaryOrders.filter((o) => o.status === "pending").length;
+    : (stats?.pending || 0) +
+      (stats?.accepted || 0) +
+      (stats?.processing || 0) +
+      (stats?.ready || 0) +
+      (stats?.completed || 0) +
+      (stats?.rejected || 0);
 
   return (
     <div className="bg-[#FAFAFA] space-y-8 min-h-screen h-full flex flex-col">
@@ -209,13 +199,32 @@ export default function Page() {
 
         <div
           className={`w-full grid xl:grid-cols-4 grid-cols-2 gap-4 transition-opacity ${
-            isSummaryLoading ? "opacity-50" : ""
+            isStatsLoading ? "opacity-50" : ""
           }`}
         >
+          {/* 1. Earnings Overview */}
+          <MerticsCard
+            title="Available Earnings"
+            value={isStatsLoading ? "..." : `₦${(stats?.availableBalance || 0).toLocaleString()}`}
+            description="Cleared for withdrawal"
+            icon={
+              <Image src={walletAdd} alt="" className="w-4 h-4 md:w-6 md:h-6" />
+            }
+            iconBg={"#E3FFEF"}
+            breakdown={[
+              { 
+                label: "Pending Clearance", 
+                value: isStatsLoading ? "..." : `₦${(stats?.pendingEarnings || 0).toLocaleString()}`,
+                color: "#F59E0B" 
+              },
+            ]}
+          />
+
+          {/* 2. Total Orders */}
           <MerticsCard
             title="Total Orders"
-            value={totalOrdersCount}
-            description="All orders you’ve had"
+            value={isStatsLoading ? "..." : totalOrdersCount.toLocaleString()}
+            description="Lifetime orders"
             icon={
               <Image
                 src={purpleCube}
@@ -224,11 +233,25 @@ export default function Page() {
               />
             }
             iconBg={"#2E0BF51A"}
+            breakdown={[
+              { 
+                label: "Completed", 
+                value: isStatsLoading ? "..." : (stats?.completed || 0).toLocaleString(),
+                color: "#10B981" 
+              },
+              { 
+                label: "Rejected", 
+                value: isStatsLoading ? "..." : (stats?.rejected || 0).toLocaleString(),
+                color: "#EF4444" 
+              }
+            ]}
           />
+
+          {/* 3. In Progress */}
           <MerticsCard
-            title="Total Weight Processed"
-            value={totalWeight}
-            description="Across all orders"
+            title="In Progress"
+            value={isStatsLoading ? "..." : ((stats?.processing || 0) + (stats?.ready || 0)).toLocaleString()}
+            description="Currently being fulfilled"
             icon={
               <Image
                 src={greenTruck}
@@ -236,25 +259,42 @@ export default function Page() {
                 className="w-4 h-4 md:w-6 md:h-6"
               />
             }
-            iconBg={"#E3FFEF"}
+            iconBg={"#DBEAFE"} // Light Blue bg
+            breakdown={[
+              { 
+                label: "Processing", 
+                value: isStatsLoading ? "..." : (stats?.processing || 0).toLocaleString(),
+                color: "#3B82F6" 
+              },
+              { 
+                label: "Ready", 
+                value: isStatsLoading ? "..." : (stats?.ready || 0).toLocaleString(),
+                color: "#8B5CF6" 
+              }
+            ]}
           />
+
+          {/* 4. New Requests */}
           <MerticsCard
-            title="Total Earnings"
-            value={isSummaryLoading ? "..." : `₦${totalEarnings.toLocaleString()}`}
-            description="In your local currency"
-            icon={
-              <Image src={walletAdd} alt="" className="w-4 h-4 md:w-6 md:h-6" />
-            }
-            iconBg={"#9333EA1A"}
-          />
-          <MerticsCard
-            title="Pending Orders"
-            value={pendingOrdersCount}
-            description="Action required"
+            title="New Requests"
+            value={isStatsLoading ? "..." : ((stats?.pending || 0) + (stats?.accepted || 0)).toLocaleString()}
+            description="Awaiting action"
             icon={
               <Image src={clock} alt="" className="w-4 h-4 md:w-6 md:h-6" />
             }
-            iconBg={"#F59E0B1A"}
+            iconBg={"#FEF3C7"} // Light Amber bg
+            breakdown={[
+              { 
+                label: "Pending", 
+                value: isStatsLoading ? "..." : (stats?.pending || 0).toLocaleString(),
+                color: "#F59E0B" 
+              },
+              { 
+                label: "Accepted", 
+                value: isStatsLoading ? "..." : (stats?.accepted || 0).toLocaleString(),
+                color: "#14B8A6" 
+              }
+            ]}
           />
         </div>
       </div>
@@ -274,10 +314,28 @@ export default function Page() {
             const isActive = activeStatus === option.value;
             const styles = getFilterStyle(option.value, isActive);
 
-            const count =
-              option.value === "all"
-                ? summaryOrders.length
-                : summaryOrders.filter((o) => o.status === option.value).length;
+            const getCountForStatus = (status: string) => {
+              if (isStatsLoading) return "...";
+              switch (status) {
+                case "all":
+                  return totalOrdersCount;
+                case "pending":
+                  return stats?.pending || 0;
+                case "accepted":
+                  return stats?.accepted || 0;
+                case "rejected":
+                  return stats?.rejected || 0;
+                case "processing":
+                  return stats?.processing || 0;
+                case "ready":
+                  return stats?.ready || 0;
+                case "completed":
+                  return stats?.completed || 0;
+                default:
+                  return 0;
+              }
+            };
+            const count = getCountForStatus(option.value);
 
             return (
               <SwiperSlide key={option.value} className="!w-auto flex-shrink-0">
@@ -297,7 +355,7 @@ export default function Page() {
                   <span
                     className={`px-2 py-0.5 rounded-xl text-xs ${styles.count}`}
                   >
-                    {isSummaryLoading ? "..." : count}
+                    {isStatsLoading ? "..." : count}
                   </span>
                 </button>
               </SwiperSlide>
@@ -311,7 +369,21 @@ export default function Page() {
           }`}
         >
           <div className="flex items-center md:justify-end justify-start gap-3 min-w-100 w-full">
-            <DatePickerWithRange onDateChange={() => {}} />
+            <DatePickerWithRange 
+              initialStartDate={startDate}
+              initialEndDate={endDate}
+              onDateChange={(range) => {
+                if (range?.from && range?.to) {
+                  updateUrl({ 
+                    startDate: range.from.toISOString(), 
+                    endDate: range.to.toISOString() 
+                  });
+                } else if (!range?.from && !range?.to) {
+                  // If cleared
+                  updateUrl({ startDate: undefined, endDate: undefined });
+                }
+              }} 
+            />
 
             <Select
               value={sortBy}
@@ -334,7 +406,7 @@ export default function Page() {
       </div>
 
       <div className="flex-1 flex w-full">
-        {allOrders.length === 0 && !isLoading ? (
+        {allOrders.length === 0 && !isLoading && !isFetching ? (
           <div className="flex-1 flex items-center justify-center">
             <EmptyState
               icon={emptyIcon}
@@ -350,7 +422,7 @@ export default function Page() {
           <div className="w-full">
             <OrderTable
               orders={allOrders}
-              isLoading={isLoading}
+              isLoading={isLoading || isFetching}
               totalItems={totalItems}
             />
           </div>

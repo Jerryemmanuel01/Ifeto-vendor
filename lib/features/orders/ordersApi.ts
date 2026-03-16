@@ -54,7 +54,15 @@ export interface OrderAssignment {
 export interface OrderAssignmentsResponse {
   success: boolean;
   message: string;
-  data: OrderAssignment[];
+  data: {
+    assignments: OrderAssignment[];
+    meta: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
+  };
   statusCode: number;
 }
 
@@ -64,11 +72,27 @@ export interface OrderAssignmentResponse {
   data: OrderAssignment;
 }
 
+export interface OrderStatsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    pending: number;
+    accepted: number;
+    processing: number;
+    ready: number;
+    completed: number;
+    rejected: number;
+    pendingEarnings: number;
+    availableBalance: number;
+  };
+  statusCode: number;
+}
+
 export const ordersApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getOrderAssignments: builder.query<
       OrderAssignmentsResponse,
-      { page?: number; limit?: number; status?: string }
+      { page?: number; limit?: number; status?: string; startDate?: string; endDate?: string; sortOrder?: string }
     >({
       query: (params) => ({
         url: "/vendor/orders/assignments",
@@ -79,6 +103,10 @@ export const ordersApi = apiSlice.injectEndpoints({
     getOrderAssignment: builder.query<OrderAssignmentResponse, string>({
       query: (id) => `/vendor/orders/assignments/${id}`,
       providesTags: (result, error, id) => [{ type: "Orders", id }],
+    }),
+    getOrderStats: builder.query<OrderStatsResponse, void>({
+      query: () => "/vendor/orders/stats",
+      providesTags: ["Orders"],
     }),
     updateAssignmentStatus: builder.mutation<
       any,
@@ -101,4 +129,5 @@ export const {
   useGetOrderAssignmentsQuery,
   useGetOrderAssignmentQuery,
   useUpdateAssignmentStatusMutation,
+  useGetOrderStatsQuery,
 } = ordersApi;

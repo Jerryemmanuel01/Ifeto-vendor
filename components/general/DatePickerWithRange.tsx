@@ -17,15 +17,19 @@ import { cn } from "@/utils/utils";
 interface DatePickerWithRangeProps {
   className?: string;
   onDateChange?: (date: DateRange | undefined) => void;
+  initialStartDate?: string;
+  initialEndDate?: string;
 }
 
 export function DatePickerWithRange({
   className,
   onDateChange,
+  initialStartDate,
+  initialEndDate,
 }: DatePickerWithRangeProps) {
   const [date, setDate] = React.useState<DateRange | undefined>({
-    from: undefined,
-    to: undefined,
+    from: initialStartDate ? new Date(initialStartDate) : undefined,
+    to: initialEndDate ? new Date(initialEndDate) : undefined,
   });
 
   const handleDateChange = (newDate: DateRange | undefined) => {
@@ -69,7 +73,7 @@ export function DatePickerWithRange({
             defaultMonth={date?.from}
             selected={date}
             onSelect={handleDateChange}
-            numberOfMonths={2}
+            numberOfMonths={1}
           />
         </PopoverContent>
       </Popover>

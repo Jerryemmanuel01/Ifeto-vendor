@@ -2,11 +2,6 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import MerticsCard from "../../components/dashboard/MerticsCard";
-import purpleCube from "@/assets/svgs/purple-cube.svg";
-import orangeCube from "@/assets/svgs/orange-cube.svg";
-import greenTruck from "@/assets/svgs/green-truck.svg";
-import walletAdd from "@/assets/svgs/wallet-add.svg";
-import emptyIcon from "@/assets/svgs/empty-state.svg";
 import add from "@/assets/svgs/add-white.svg";
 import bag from "@/assets/svgs/bag-purple.svg";
 import check from "@/assets/svgs/tick-circle-green.svg";
@@ -15,7 +10,7 @@ import danger from "@/assets/svgs/danger-red.svg";
 import search from "@/assets/svgs/search-normal-light.svg";
 import Image from "next/image";
 import EmptyState from "../../components/EmptyState";
-import OrdersTable from "../../components/dashboard/OrdersTable";
+import emptyIcon from "@/assets/svgs/empty-state.svg";
 
 import {
   Select,
@@ -129,10 +124,6 @@ export default function Page() {
       };
     }) || [];
 
-  const totalProducts = productsData?.data?.meta?.total || 0;
-  // We can't calculate other status counts reliably without separate API calls or returning all data
-  // For now, we will use the total for "Total Products" and 0 for others or roughly filter if implementing client side
-
   return (
     <div className="bg-[#FAFAFA] space-y-8 min-h-screen h-full flex flex-col">
       <div className="space-y-5">
@@ -156,62 +147,54 @@ export default function Page() {
           </Link>
         </div>
 
-        <div className="w-full grid xl:grid-cols-4 grid-cols-2 gap-4">
+        <div className="w-full grid xl:grid-cols-4 grid-cols-2 gap-4 transition-opacity">
+          {/* 1. Total Fleet */}
           <MerticsCard
             title="Total Products"
-            value={stats.total}
-            description="All products you’ve added"
+            value={!statsData ? "..." : stats.total.toLocaleString()}
+            description="Entire product catalog"
             icon={<Image src={bag} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
             iconBg={"#2E0BF51A"}
+            breakdown={[
+              { label: "Drafts", value: !statsData ? "..." : stats.draft.toLocaleString(), color: "#9CA3AF" },
+            ]}
           />
+
+          {/* 2. Customer Facing */}
           <MerticsCard
-            title="Live"
-            value={stats.live}
-            description="Live & visible to customers"
-            icon={<Image src={greenTruck} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
-            iconBg={"#E3FFEF"}
-          />
-          <MerticsCard
-            title="Pending"
-            value={stats.pending}
-            description="Awaiting admin approval"
-            icon={<Image src={clock} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
-            iconBg={"#F59E0B1A"}
-          />
-          <MerticsCard
-            title="Rejected"
-            value={stats.rejected}
-            description="Fix issues and resubmit"
-            icon={<Image src={danger} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
-            iconBg={"#E53E3E1A"}
-          />
-          <MerticsCard
-            title="Approved"
-            value={stats.approved}
-            description="Approved by admins"
+            title="Live in Store"
+            value={!statsData ? "..." : stats.live.toLocaleString()}
+            description="Visible to customers"
             icon={<Image src={check} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
             iconBg={"#E3FFEF"}
+            breakdown={[
+              { label: "Approved", value: !statsData ? "..." : stats.approved.toLocaleString(), color: "#10B981" },
+            ]}
           />
+
+          {/* 3. Status Action */}
           <MerticsCard
-            title="Draft"
-            value={stats.draft}
-            description="Unpublished drafts"
-            icon={<Image src={purpleCube} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
-            iconBg={"#2E0BF51A"}
+            title="Pending Approval"
+            value={!statsData ? "..." : stats.pending.toLocaleString()}
+            description="Awaiting admin check"
+            icon={<Image src={clock} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
+            iconBg={"#FEF3C7"}
+            breakdown={[
+              { label: "Rejected", value: !statsData ? "..." : stats.rejected.toLocaleString(), color: "#EF4444" },
+            ]}
           />
+
+          {/* 4. Inventory Warnings */}
           <MerticsCard
-            title="Out of Stock"
-            value={stats.outOfStock}
-            description="Zero inventory"
+            title="Stock Warnings"
+            value={!statsData ? "..." : (stats.outOfStock + stats.lowStock).toLocaleString()}
+            description="Requires replenishment"
             icon={<Image src={danger} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
-            iconBg={"#E53E3E1A"}
-          />
-          <MerticsCard
-            title="Low Stock"
-            value={stats.lowStock}
-            description="Running out soon"
-            icon={<Image src={orangeCube} alt="" className="w-4 h-4 md:w-6 md:h-6" />}
-            iconBg={"#F59E0B1A"}
+            iconBg={"#FEE2E2"}
+            breakdown={[
+              { label: "Out of Stock", value: !statsData ? "..." : stats.outOfStock.toLocaleString(), color: "#EF4444" },
+              { label: "Low Stock", value: !statsData ? "..." : stats.lowStock.toLocaleString(), color: "#F59E0B" },
+            ]}
           />
         </div>
       </div>
@@ -331,7 +314,7 @@ export default function Page() {
             <ProductsTable
               products={products}
               isLoading={isLoading || isFetching}
-              totalItems={totalProducts}
+              totalItems={stats.total}
             />
           </div>
         )}

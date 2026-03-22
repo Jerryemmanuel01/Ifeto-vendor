@@ -22,6 +22,7 @@ const BusinessDocumentForm = () => {
     governmentId: useRef<HTMLInputElement>(null),
     cacDocument: useRef<HTMLInputElement>(null),
     proofOfAddress: useRef<HTMLInputElement>(null),
+    passportPhoto: useRef<HTMLInputElement>(null),
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -133,6 +134,12 @@ const BusinessDocumentForm = () => {
           "proofOfAddress",
           "Proof of Address",
           "PDF, JPEG, PNG file, max 5MB",
+        )}
+
+        {renderUploadField(
+          "passportPhoto",
+          "Passport Photo",
+          "JPEG, PNG file, max 5MB",
         )}
       </div>
 
